@@ -8,10 +8,17 @@
 		<param-name>contextConfigLocation</param-name>
 		<param-value>/WEB-INF/spring/root-context.xml</param-value>
 	</context-param>
+	<context-param>
+		<param-name>languageFolder</param-name>
+		<param-value>/WEB-INF/classes/</param-value>
+	</context-param>
 	
 	<!-- Creates the Spring Container shared by all Servlets and Filters -->
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+	</listener>
+	<listener>
+		<listener-class>ro.isdc.LanguageLoaderListener</listener-class>
 	</listener>
 	
 	<servlet>
