@@ -43,7 +43,7 @@
         <beans:property name="definitions" value="/WEB-INF/tiles.xml"/>
     </beans:bean>	
 	<!-- Resolves tiles-based views. Defined in tiles.xml -->
-	<beans:bean id="tilesViewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+	<beans:bean id="tilesViewResolver" class="org.springframework.web.servlet.view.tiles2.TilesViewResolver">
         <beans:property name="viewClass" value="org.springframework.web.servlet.view.tiles2.TilesView"/>
         <beans:property name="order" value="0"/>
     </beans:bean>    

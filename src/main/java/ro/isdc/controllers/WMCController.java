@@ -72,7 +72,7 @@ public class WMCController {
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model) {
 		logger.info("Welcome home! the client locale is "+ locale.toString());
-		return "home";
+		return "searchPage";
 	}
 	
 

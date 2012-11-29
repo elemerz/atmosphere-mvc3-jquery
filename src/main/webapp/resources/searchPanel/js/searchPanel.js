@@ -107,4 +107,4 @@
 	$(function() {
 		return new window[NS][SubClass]();
 	});
-}(window.jQuery, "WMC", "Base", "Home"));
+}(window.jQuery, "WMC", "Base", "SearchPanel"));
