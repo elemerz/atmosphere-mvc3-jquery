@@ -34,7 +34,7 @@ import ro.isdc.utils.Utils;
  * Handles requests for the application home page.
  */
 @Controller
-public class WMCController {
+public class WMCController extends LocaleAwareController{
 	
 	@Autowired
 	private InfoSourceConfig infoSourceConfig;
@@ -49,86 +49,19 @@ public class WMCController {
 	
 	private static final Logger logger = LoggerFactory.getLogger(WMCController.class);
 	
-	private void suspend(final AtmosphereResource resource) {
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
-        resource.addEventListener(new AtmosphereResourceEventListenerAdapter() {
-            @Override
-            public void onSuspend(AtmosphereResourceEvent event) {
-                countDownLatch.countDown();
-                resource.removeEventListener(this);
-            }
-        });
-        resource.suspend();
-        try {
-            countDownLatch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-	
 	/**
 	 * Simply selects the home view to render by returning its name.
 	 */
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Locale locale, Model model) {
-		logger.info("Welcome home! the client locale is "+ locale.toString());
-		return "searchPage";
-	}
-	
-
-	/**
-	 * Simply selects the home view to render by returning its name WMC!!!.
-	 */
-	@RequestMapping(value = "/WMCHome", method = RequestMethod.GET)
-	public String home(final Model model) {	 
 		Set<String> infoSources = infoSourceConfig.getSiteConfig().getConfigMap().keySet();
 		model.addAttribute("infoSources", infoSources);
-		return "searchPage"; 
+		return "searchPage";
 	}
-	
-	/**
-	 * The method where the atmosphere requests arrive.
-	 * Direct mapping is not possible here because 
-	 * of the Atmosphere request.
-	 * 
-	 * @param atmosphereResource
-	 * @param searchModelAsJson
-	 * 				the JSON containing the sites and movies
-	 * @throws JsonGenerationException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 * WMC!!!
-	 */
-	@RequestMapping(value = "/searchMovies", method = RequestMethod.GET)
-	public void openConnection(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException {
-		System.out.println("proxy host: " + System.getProperty("http.proxyHost"));
-		System.out.println("proxy port: " + System.getProperty("http.proxyPort"));
-		this.suspend(atmosphereResource);
-		atmosphereResource.getBroadcaster().broadcast("Communication Cahannel Opened.");
-	}
-	
-	//WMC!!!
-	@RequestMapping(value = "/searchMovies", method = RequestMethod.POST)
+
+	@RequestMapping(value="/search", method = RequestMethod.GET)
 	@ResponseBody
-	public void srcMoviesAtm(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException {
-//		AtmosphereUtil.suspend(atmosphereResource); 
-		
-		SearchInputModel reqSearch = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);
-		List<MovieInfoSource> infoSourcesList =  infoSourceConfig.getMoviesInfoSource(reqSearch);
-		if (reqSearch != null) {
-			
-		
-		try {
-			movieRetrieverBM.getBriefMoviesResult(atmosphereResource,reqSearch, infoSourcesList,  htmlNodePathMapper);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		}
-	}
-	
-	@RequestMapping(value="/search")
-	@ResponseBody
-	public void search(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
+	public void openChannel(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
 		this.suspend(atmosphereResource);
         final Broadcaster bc = atmosphereResource.getBroadcaster();
         logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
@@ -148,4 +81,82 @@ public class WMCController {
         }
 	}
 	
+	@RequestMapping(value="/test", method = RequestMethod.GET)
+	@ResponseBody
+	public void openChannelTest(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
+		this.suspend(atmosphereResource);
+		final Broadcaster bc = atmosphereResource.getBroadcaster();
+		logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
+		
+		if(clientData == null || clientData.isEmpty()){
+			bc.broadcast("No client data received. Sending back Stephen Hawking...");
+		}else{
+			int max=5;
+			for (int i = 0; i < max; i++) {
+				bc.broadcast(clientData + "- Back from server " + i + "/" + max);
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	@RequestMapping(value = "/search", method = RequestMethod.POST)
+	@ResponseBody
+	public void search(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException {
+//		AtmosphereUtil.suspend(atmosphereResource); 
+		
+		SearchInputModel reqSearch = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);
+		List<MovieInfoSource> infoSourcesList =  infoSourceConfig.getMoviesInfoSource(reqSearch);
+		if (reqSearch != null) {
+			
+		
+		try {
+			movieRetrieverBM.getBriefMoviesResult(atmosphereResource,reqSearch, infoSourcesList,  htmlNodePathMapper);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		}
+	}
+	
+	@RequestMapping(value="/test", method = RequestMethod.POST)
+	@ResponseBody
+	public void test(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
+		this.suspend(atmosphereResource);
+        final Broadcaster bc = atmosphereResource.getBroadcaster();
+        logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
+
+        if(clientData == null || clientData.isEmpty()){
+        	bc.broadcast("No client data received. Sending back Stephen Hawking...");
+        }else{
+        	int max=5;
+        	for (int i = 0; i < max; i++) {
+        		bc.broadcast(clientData + "- Back from server " + i + "/" + max);
+        		try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+        }
+	}
+
+	private void suspend(final AtmosphereResource resource) {
+		final CountDownLatch countDownLatch = new CountDownLatch(1);
+		resource.addEventListener(new AtmosphereResourceEventListenerAdapter() {
+			@Override
+			public void onSuspend(AtmosphereResourceEvent event) {
+				countDownLatch.countDown();
+				resource.removeEventListener(this);
+			}
+		});
+		resource.suspend();
+		try {
+			countDownLatch.await();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 }

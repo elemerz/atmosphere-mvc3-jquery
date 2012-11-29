@@ -15354,7 +15354,12 @@ b){return(100*(parseInt(a,10)/parseInt(b,10))).toFixed()}var d=window,c=screen,g
 		}
 		return this;
 	};
-
+	Number.random=function(a,b){
+		return Math.floor(a+ (b-a)*Math.random());
+	};
+	Array.method('choose',function(){
+		return this[Number.random(0,this.length-1)];
+	});
 	/**
 	 * Client-side templating method. Useful when generationg dynamic markup based on JSON objects received by Ajax. Eg.: '<span>{firstName}, {lastName}</span>'.tmpl({"firstName":
 	 * "Elem�r", "lastName" : "Z�goni"}) = '<span>Elem�r, Z�goni</span>';

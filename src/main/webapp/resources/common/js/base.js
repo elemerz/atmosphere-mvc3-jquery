@@ -30,18 +30,16 @@
 		}
 		return this;
 	};
-
-	/**
-	 * Client-side templating method. Useful when generationg dynamic markup based on JSON objects received by Ajax. Eg.: '<span>{firstName}, {lastName}</span>'.tmpl({"firstName":
-	 * "Elemér", "lastName" : "Zágoni"}) = '<span>Elemér, Zágoni</span>';
-	 */
 	Number.random=function(a,b){
 		return Math.floor(a+ (b-a)*Math.random());
 	};
 	Array.method('choose',function(){
 		return this[Number.random(0,this.length-1)];
 	});
-	
+	/**
+	 * Client-side templating method. Useful when generationg dynamic markup based on JSON objects received by Ajax. Eg.: '<span>{firstName}, {lastName}</span>'.tmpl({"firstName":
+	 * "Elemér", "lastName" : "Zágoni"}) = '<span>Elemér, Zágoni</span>';
+	 */
 	String.method('tmpl', function(obj) {
 		var prop, result = this;
 
