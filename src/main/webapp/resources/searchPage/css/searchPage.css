@@ -15,11 +15,11 @@
 	padding: 5px 0 20px 100px;	
 	text-decoration: none;
 	text-shadow: 2px 3px 3px #292929;
-	-webkit-mask-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0,0,0,1)), color-stop(50%, rgba(0,0,0,0)), to(rgba(0,0,0,1)));
 }
 
 #searchPage  .user-input-zone {
 	background: #dcdcdc;
+	height: 92%;
 }
 
 #searchPage  .user-input {
@@ -114,7 +114,29 @@
 	background: linear-gradient(to bottom,  #80afd6 0%,#207cca 99%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#80afd6', endColorstr='#207cca',GradientType=0 ); /* IE6-9 */	
 }
+
 .search-button:active {
 	position:relative;
 	top:1px;
+}
+
+#searchPage .info-sources li{
+ float:left;
+ padding-right: 10px;
+}
+
+.info-sources {
+ padding: 10px 0 10px 0;
+ color: #666;
+ font-family:Comic Sans MS;
+ font-size:20px; 
+}
+
+.page-footer {
+ color: #000;
+ padding: 5px 0 5px 0;
+}
+
+.ui-helper-hidden{
+	display: none;
 }

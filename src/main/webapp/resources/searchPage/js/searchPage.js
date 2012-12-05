@@ -9,7 +9,6 @@
 		$accordion : null,
 		$addButton : $("button.add",'#searchPage'),
 		$searchTerm : $("input.movie-title",'#searchPage'),
-		
 		request: null,
 		socket: $.atmosphere,
 		subSocket: null,
@@ -23,10 +22,11 @@
 		fruits:['apple','pear','plum','nut','coconut','pineapple','grapes','cherry','strawberry','banana','grapefruit','chestnut','walnut','peanut'],
 		/** Constructor. */
 		init : function(cfg) {
-			this.doLayout();
+			//this.doLayout();
 			this.openChannel("streaming");
-			this.openChannelTest("streaming");
+			//this.openChannelTest("streaming");
 			this.bindBehavior();
+			this.request.onMessage = $.proxy(this.messageReceived,this);
 		},
 		
 		/**Renders the page's dynamic layout*/
@@ -103,7 +103,7 @@
 		},
 		bindBehavior: function(){
 			var that=this;
-			this.bindTestBehavior();
+			//this.bindTestBehavior();
 			//bind search page Behavior:
 			this.$addButton.on('click', $.proxy(this.processRequest, this));
 			this.$accordion=this.$contentArea.accordion({heightStyle: "content", collapsible: true, active: false});			
@@ -151,10 +151,56 @@
 		},
 		
 		/**On Message From server.*/
-		onMessageReceived: function(response){
-			$.atmosphere.log('info', ['onMessageReceived']);
-			var v=$('#txaFromServer').val();
-			$('#txaFromServer').val(v + (/^\s*$/.test(v) ? '' : '\n') + response.responseBody).scrollTop(100000);
+		onMessageReceived: function(response){			
+			var contentArea = $('.search-results',this.$ctx),
+        	searchItemTmpl = $('#searchItemTmpl').val(),		        
+			movieDataSourceTmpl = $('#movieDataSourceTmpl').val(),
+			movieItemTmpl = $('#movieItemTmpl').val(),
+			movieTitle = $('.movie-title',this.$ctx).val(), 
+			briefMovieInfo = null,
+			site = null,
+			that=this;						
+			
+			$.atmosphere.log('info', ['onMessageReceived']);			
+
+			if(response.state === "messageReceived"){	            	
+	        	if(response.responseBody!==""){
+	        		
+	        		$('#accordion').accordion('add', {
+	    				title: movieTitle,
+	    				content: $(searchItemTmpl.tmpl({
+	    							"searchTerm" : movieTitle						
+	    						})),
+	    				selected: true
+	    			});		  
+	        		
+	        		briefMovieInfo = $.parseJSON(response.responseBody);	           			        		
+	        		
+	        		if(briefMovieInfo[0].site){
+	        			$(movieDataSourceTmpl.tmpl({
+							"site" : briefMovieInfo[0].site						
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
+	        		}
+	        		
+		        	$.each(briefMovieInfo,function(index, value){
+		        		$(movieItemTmpl.tmpl({
+							"title" : value.title,
+							"year" : value.year,
+							"director" : value.director,
+							"id" : value.id
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('#'+value.site));
+		        		site = value.site;
+	        		});
+		        	$('#accordion').accordion('getPanel',movieTitle).find('#'+site).tree({animate:true});			        		        		
+	        		
+	        		$('.movie-id').on('click',function(e){
+	        			$.proxy(that.getDetailedData, that);
+					});    				
+	        		
+	        	}else{ //the response is empty
+	        		$.atmosphere.log('info', ["empty response"]);
+	            }
+		    }// end if(response.state==="messageReceived")	    
 		},
 		
 		/**On Message Published*/
@@ -191,6 +237,8 @@
 			if($('.movie-title').val()!==""){
 				movieData.searchTerms.push($('.movie-title').val());	
 			}		
+			
+			$.atmosphere.log('info', [movieData]);
 	
 			if (movieData.infoSourceKeys.length === 0) {
 				$().message(this.$msg.data('searchpage.no.infosource.selected'),true);
@@ -202,9 +250,19 @@
 			}
 			this.request.method='POST';
 			this.request.url=this.$ctx.data('search-url');
-
-        	this.subSocket.push(JSON.stringify(movieData));		       
-		}
+			
+			/*$('#accordion').accordion('add', {
+				title: movieTitle,
+				content: $(searchItemTmpl.tmpl({
+							"searchTerm" : movieTitle						
+						})),
+				selected: false
+			});		  */      	
+        	this.subSocket.push(JSON.stringify(movieData));		    
+        	
+        	
+		},
+				
 	});
 
 	/* Attach page specific behavior on page load */

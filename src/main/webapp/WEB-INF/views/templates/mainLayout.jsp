@@ -16,17 +16,21 @@
 	</c:if>
 	-->
 	<link rel="stylesheet" href="${ctx}/resources/searchPage/css/searchPage.css" media="all" />
+	<link rel="stylesheet" href="${ctx}/resources/common/css/easyui.css" />
+	
 </head>
 
 <body id="${pageName}" class="layout-container" data-search-url='<c:url value='/search'/>' data-test-url='<c:url value='/test'/>'>
 	<tiles:insertAttribute name="body"/> 
 	<!--JavaScripts-->
-	<script type="text/javascript" src="${wroCtx}/commons.js"></script>
+	
+	<script type="text/javascript" src="${wroCtx}/commons.js"></script>	  
+	<script type="text/javascript" src="${ctx}/resources/searchPage/js/searchPage.js"></script>	     
+	
 	<%-- 
 	<c:if test="${not empty pageName}">
 		<script type="text/javascript" src="${wroCtx}/${pageName}.js"></script>
 	</c:if>	
 	--%>
-<script src="${ctx}/resources/searchPage/js/searchPage.js"></script>
 </body>
 </html>

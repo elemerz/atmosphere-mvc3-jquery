@@ -67,7 +67,7 @@ public class WMCController extends LocaleAwareController{
         logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
 
         if(clientData == null || clientData.isEmpty()){
-        	bc.broadcast("No client data received. Sending back Stephen Hawking...");
+        	bc.broadcast("");
         }else{
         	int max=5;
         	for (int i = 0; i < max; i++) {
