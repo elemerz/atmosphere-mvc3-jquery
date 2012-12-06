@@ -18,13 +18,10 @@
 		subSocketTest: null,
 		isSending:false,
 		stopSignaled:false,
-		
-		fruits:['apple','pear','plum','nut','coconut','pineapple','grapes','cherry','strawberry','banana','grapefruit','chestnut','walnut','peanut'],
+				
 		/** Constructor. */
 		init : function(cfg) {
-			//this.doLayout();
 			this.openChannel("streaming");
-			//this.openChannelTest("streaming");
 			this.bindBehavior();
 			this.request.onMessage = $.proxy(this.messageReceived,this);
 		},
@@ -56,62 +53,16 @@
 			}));
 			$('.user-input-zone').layout(cfgLayout);
 		},
-		/**For Test Purposes only*/
-		bindTestBehavior: function(){
-			var that=this;
-			
-			$('#btnSend').click(function(){
-				var v=$('#txtFromClient').val();
-				if(jQuery.atmosphere.requests.length===0){
-					that.openChannelTest("streaming");
-				}
-				that.requestTest.method='POST';
-				that.subSocketTest.push(v);
-			});
-			$('#btnAutoSend').click(function(){
-				var lngTimer,t= 20, sender=function(){
-					var v=that.fruits.choose();
-					that.requestTest.method='POST';
-					that.subSocketTest.push(v);
-					
-					window.clearTimeout(lngTimer);
-					t= Number.random(1000,6000);
-					if(!that.stopSignaled){
-						lngTimer=window.setTimeout(sender,t);
-					}
-				};
-				if(jQuery.atmosphere.requests.length===0){
-					that.openChannelTest("streaming");
-				}
-				
-				that.isSending=true;
-				$('#btnAutoSend').attr('disabled','disabled');
-				$('#btnStop').removeAttr('disabled');
-				
-				window.clearTimeout(lngTimer);
-				lngTimer=window.setTimeout(sender,t);
-			});
-			$('#btnStop').click(function(){
-				that.stopSignaled=true;
-				that.isSending=false;
-				that.socketTest.unsubscribe();
-				that.isSending=true;
-				$('#btnAutoSend').removeAttr('disabled','disabled');
-				$('#btnStop').attr('disabled','disabled');
-				
-			});
-		},
+		
 		bindBehavior: function(){
 			var that=this;
-			//this.bindTestBehavior();
 			//bind search page Behavior:
 			this.$addButton.on('click', $.proxy(this.processRequest, this));
 			this.$accordion=this.$contentArea.accordion({heightStyle: "content", collapsible: true, active: false});			
 		},
 		/**Open a bi-directional communication channel between the browser and the specified server.*/
 		openChannel: function (transport,connectionType) {
-			var that=this;
-				
+			var that=this;				
 			this.request = new $.atmosphere.AtmosphereRequest();
 			$.extend(this.request,{
 				url:that.$ctx.data('search-url'),
@@ -119,31 +70,13 @@
 				transport:transport,
 				fallbackTransport:"long-polling",
 				onOpen:that.onChannelOpen,	
-				onMessage:that.onMessageReceived,
+				onMessage:$.proxy(that.onMessageReceived,that),
 				onMessagePublished: that.onMessagePublished,
 				onError:that.onError,
 				onReconnect: that.onReconnect
 			});
 			this.subSocket = this.socket.subscribe(this.request);
-		},
-		
-		openChannelTest: function (transport,connectionType) {
-			var that=this;
-			
-			this.requestTest = new $.atmosphere.AtmosphereRequest();
-			$.extend(this.requestTest,{
-				url:that.$ctx.data('test-url'),
-				contentType:"application/json",
-				transport:transport,
-				fallbackTransport:"long-polling",
-				onOpen:that.onChannelOpen,	
-				onMessage:that.onMessageReceived,
-				onMessagePublished: that.onMessagePublished,
-				onError:that.onError,
-				onReconnect: that.onReconnect
-			});
-			this.subSocketTest = this.socketTest.subscribe(this.requestTest);
-		},
+		},				
 		
 		/**On Channel open*/
 		onChannelOpen: function(){
@@ -159,20 +92,12 @@
 			movieTitle = $('.movie-title',this.$ctx).val(), 
 			briefMovieInfo = null,
 			site = null,
-			that=this;						
+			that=this;
 			
 			$.atmosphere.log('info', ['onMessageReceived']);			
 
 			if(response.state === "messageReceived"){	            	
-	        	if(response.responseBody!==""){
-	        		
-	        		$('#accordion').accordion('add', {
-	    				title: movieTitle,
-	    				content: $(searchItemTmpl.tmpl({
-	    							"searchTerm" : movieTitle						
-	    						})),
-	    				selected: true
-	    			});		  
+	        	if(response.responseBody!==""){	        		        	
 	        		
 	        		briefMovieInfo = $.parseJSON(response.responseBody);	           			        		
 	        		
@@ -183,18 +108,25 @@
 	        		}
 	        		
 		        	$.each(briefMovieInfo,function(index, value){
+		        		site = value.site;
 		        		$(movieItemTmpl.tmpl({
 							"title" : value.title,
 							"year" : value.year,
 							"director" : value.director,
 							"id" : value.id
-						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('#'+value.site));
-		        		site = value.site;
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('#'+site));
 	        		});
 		        	$('#accordion').accordion('getPanel',movieTitle).find('#'+site).tree({animate:true});			        		        		
 	        		
 	        		$('.movie-id').on('click',function(e){
-	        			$.proxy(that.getDetailedData, that);
+	        			var detailedMovieData = {
+        					"movieId" : [],
+        					"infoSourceKey" : []
+	        			};
+	        			detailedMovieData.infoSourceKey.push($(this).closest('.tree').attr('id'));
+	        			detailedMovieData.movieId.push($(this).attr('id'));
+	        			$.atmosphere.log('info', [detailedMovieData]);	
+	        			$.proxy(that.getDetailedData(detailedMovieData),that);
 					});    				
 	        		
 	        	}else{ //the response is empty
@@ -217,7 +149,7 @@
 			$.atmosphere.log('info', ['onReconnect']);
 		},
 		
-		/**Sends a request to server and then*/
+		/**Sends a request to server with the search term and the movie infosources*/
 		processRequest: function(e){
 			var that= this,
 			$el = $(e.target), 
@@ -241,27 +173,39 @@
 			$.atmosphere.log('info', [movieData]);
 	
 			if (movieData.infoSourceKeys.length === 0) {
-				$().message(this.$msg.data('searchpage.no.infosource.selected'),true);
+				$.messager.alert('',this.$msg.data('searchpage.no.infosource.selected'),'info');
 				return false;
 			}
 			if (movieData.searchTerms.length === 0) {
-				$().message(this.$msg.data('searchpage.movie.required'),true);
+				$.messager.alert('',this.$msg.data('searchpage.movie.required'),'info');
 				return false;
 			}
 			this.request.method='POST';
 			this.request.url=this.$ctx.data('search-url');
 			
-			/*$('#accordion').accordion('add', {
+			$('#accordion').accordion('add', {
 				title: movieTitle,
 				content: $(searchItemTmpl.tmpl({
 							"searchTerm" : movieTitle						
 						})),
-				selected: false
-			});		  */      	
+				selected: true
+			});		  
         	this.subSocket.push(JSON.stringify(movieData));		    
-        	
-        	
 		},
+		
+		/**Sends a request to server with a movie id to get detailed data about that movie*/
+		getDetailedData: function(detailedMovieData){
+			var that= this,						
+			movieTitle = $('.movie-title',this.$ctx).val(), 
+			contentArea = $('.search-results',this.$ctx), 
+			searchItemTmpl = $('#searchItemTmpl').val();						
+	
+			$.atmosphere.log('info', [detailedMovieData]);
+				
+			this.request.method='POST';
+			this.request.url=this.$ctx.data('search-url');						  
+        	this.subSocket.push(JSON.stringify(detailedMovieData));		    
+		}
 				
 	});
 

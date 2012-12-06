@@ -39,7 +39,7 @@
             </div>  
         </div>  <%--end tag for center region layout --%>
         
-        <div data-options="region:'south',split:true" style="height:50px;">
+        <div data-options="region:'south',split:true" style="height:40px;">
         	<footer class="main"><h5 class="page-footer"><%@include file="/WEB-INF/views/footer.jsp"%></h5></footer>
         </div>          
     </div>  
@@ -47,7 +47,7 @@
 <%-- MovieItemTemplates --%>	
 <textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm} data-options="iconCls:'icon-save'"></div></textarea>
 <textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul id={site}></ul></li></ul></textarea>
-<textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id}>{id}</a></li></ul></li></textarea>
+<textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
 <%--Messages Component--%>
 <input type="hidden" class="messages"
 data-search-url='${pageContext.request.contextPath}/searchMovies/'

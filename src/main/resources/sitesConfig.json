@@ -2,7 +2,7 @@
   "configMap": {
   "imdb":{
     "briefSearchURL":"http://www.imdb.com/search/title?title={title}/",
-    "fullSearchURL":"http://http://www.imdb.com/title/{movieId}/",
+    "fullSearchURL":"http://www.imdb.com/title/{movieId}/",
     "briefSearchMethod":"get",
     "fullSearchMethod": "get",
      "post":{},

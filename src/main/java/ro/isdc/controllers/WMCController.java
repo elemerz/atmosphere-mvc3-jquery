@@ -27,6 +27,7 @@ import ro.isdc.InfoSourceConfig;
 import ro.isdc.model.HtmlNodePathMapper;
 import ro.isdc.model.MovieInfoSource;
 import ro.isdc.model.SearchInputModel;
+import ro.isdc.model.DetailedMovieDataModel;
 import ro.isdc.services.IMovieRetrieverBusinessManager;
 import ro.isdc.utils.Utils;
 
@@ -81,67 +82,22 @@ public class WMCController extends LocaleAwareController{
         }
 	}
 	
-	@RequestMapping(value="/test", method = RequestMethod.GET)
-	@ResponseBody
-	public void openChannelTest(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
-		this.suspend(atmosphereResource);
-		final Broadcaster bc = atmosphereResource.getBroadcaster();
-		logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
-		
-		if(clientData == null || clientData.isEmpty()){
-			bc.broadcast("No client data received. Sending back Stephen Hawking...");
-		}else{
-			int max=5;
-			for (int i = 0; i < max; i++) {
-				bc.broadcast(clientData + "- Back from server " + i + "/" + max);
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 	
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	@ResponseBody
 	public void search(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException {
 //		AtmosphereUtil.suspend(atmosphereResource); 
 		
-		SearchInputModel reqSearch = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);
-		List<MovieInfoSource> infoSourcesList =  infoSourceConfig.getMoviesInfoSource(reqSearch);
-		if (reqSearch != null) {
-			
-		
-		try {
-			movieRetrieverBM.getBriefMoviesResult(atmosphereResource,reqSearch, infoSourcesList,  htmlNodePathMapper);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		}
-	}
-	
-	@RequestMapping(value="/test", method = RequestMethod.POST)
-	@ResponseBody
-	public void test(AtmosphereResource atmosphereResource, @RequestBody final String clientData){
-		this.suspend(atmosphereResource);
-        final Broadcaster bc = atmosphereResource.getBroadcaster();
-        logger.info("Atmo Resource Size: " + bc.getAtmosphereResources().size());
-
-        if(clientData == null || clientData.isEmpty()){
-        	bc.broadcast("No client data received. Sending back Stephen Hawking...");
-        }else{
-        	int max=5;
-        	for (int i = 0; i < max; i++) {
-        		bc.broadcast(clientData + "- Back from server " + i + "/" + max);
-        		try {
-					Thread.sleep(1000);
+			SearchInputModel reqSearch = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);	
+			List<MovieInfoSource> infoSourcesList =  infoSourceConfig.getMoviesInfoSource(reqSearch);
+			if (reqSearch != null) {
+				try {
+					movieRetrieverBM.getBriefMoviesResult(atmosphereResource,reqSearch, infoSourcesList,  htmlNodePathMapper);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			}
-        }
-	}
+			}		
+	}	
 
 	private void suspend(final AtmosphereResource resource) {
 		final CountDownLatch countDownLatch = new CountDownLatch(1);
