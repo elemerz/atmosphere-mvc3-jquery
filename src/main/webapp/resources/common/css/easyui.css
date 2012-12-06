@@ -553,7 +553,19 @@
 .layout-button-right{
 	background:url('images/layout_arrows.png') no-repeat 0 -16px;
 }
-.layout-expand{
+.layout-button-up-ez{
+	background:url('images/layout_arrows_ez.png') no-repeat -16px -16px;
+}
+.layout-button-down-ez{
+	background:url('images/layout_arrows_ez.png') no-repeat -16px 0;
+}
+.layout-button-left-ez{
+	background:url('images/layout_arrows_ez.png') no-repeat 0 0;
+}
+.layout-button-right-ez{
+	background:url('images/layout_arrows_ez.png') no-repeat 0 -16px;
+}
+.layout-expand {
 	position:absolute;
 	padding:0px 5px;
 	padding:0px;
@@ -561,6 +573,9 @@
 	font-size:1px;
 	cursor:pointer;
 	z-index:1;
+}
+.layout-expand-ez {
+	background:url('images/nice_bck.png') repeat scroll 0 0 transparent;
 }
 .layout-expand .panel-header{
 	background:transparent;
@@ -609,6 +624,18 @@
 .layout-split-west{
 	border-right:5px solid #D2E0F2;
 }
+.layout-split-north-ez{
+	border-bottom:5px solid #708090;
+}
+.layout-split-south-ez{
+	border-top:5px solid #708090;
+}
+.layout-split-east-ez{
+	border-left:5px solid #708090;
+}
+.layout-split-west-ez{
+	border-right:5px solid #708090;
+}
 .layout-mask{
 	position:absolute;
 	background:#fafafa;
@@ -647,8 +674,8 @@ a.l-btn span.l-btn-left{
 	display:inline-block;
 	background:url('images/button_span_bg.gif') no-repeat top left;
 	padding:4px 0px 4px 18px;
-	line-height:16px;
-	height:16px;
+	line-height:24px;
+	height:24px;
 }
 a.l-btn-plain span.l-btn-left{
 	background:transparent;
@@ -657,14 +684,14 @@ a.l-btn-plain span.l-btn-left{
 
 a.l-btn span span.l-btn-text{
 	display:inline-block;
-	height:16px;
-	line-height:16px;
+	height:24px;
+	line-height:24px;
 	padding:0px;
 }
 a.l-btn span span span.l-btn-empty{
 	display:inline-block;
 	padding:0px;
-	width:16px;
+	width:24px;
 }
 a:hover.l-btn{
 	background-position: bottom right;
@@ -884,6 +911,10 @@ a.m-btn-plain-active{
 	position:relative;
 	border:1px solid #99BBE8;
 }
+.panel-header-ez{
+	color: #fff;
+	background:url('images/panel_title_ez.png') repeat-x;
+}
 .panel-title{
 	background:url('images/blank.gif') no-repeat;
 }
@@ -895,6 +926,10 @@ a.m-btn-plain-active{
 	overflow:auto;
 	border:1px solid #99BBE8;
 	border-top-width:0px;
+}
+.panel-body-ez{
+	border:1px solid #666;
+	background: #deefff;	
 }
 .panel-body-noheader{
 	border-top-width:1px;

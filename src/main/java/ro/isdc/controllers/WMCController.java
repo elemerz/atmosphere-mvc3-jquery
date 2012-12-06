@@ -57,6 +57,7 @@ public class WMCController extends LocaleAwareController{
 	public String home(Locale locale, Model model) {
 		Set<String> infoSources = infoSourceConfig.getSiteConfig().getConfigMap().keySet();
 		model.addAttribute("infoSources", infoSources);
+		model.addAttribute("currentTemplate", "Basic Template");		
 		return "searchPage";
 	}
 

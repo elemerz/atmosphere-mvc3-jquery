@@ -156,22 +156,31 @@
         	searchItemTmpl = $('#searchItemTmpl').val(),		        
 			movieDataSourceTmpl = $('#movieDataSourceTmpl').val(),
 			movieItemTmpl = $('#movieItemTmpl').val(),
+			movieTitle = $('.movie-title',this.$ctx).val(), 
 			briefMovieInfo = null,
-			site = null;						
+			site = null,
+			that=this;						
 			
 			$.atmosphere.log('info', ['onMessageReceived']);			
 
 			if(response.state === "messageReceived"){	            	
 	        	if(response.responseBody!==""){
-	        		briefMovieInfo = $.parseJSON(response.responseBody);
 	        		
-	        		/*$(searchItemTmpl.tmpl({
-						"searchTerm" : $.trim($('.movie-title').val())						
-					})).appendTo(contentArea);	*/        			        		
+	        		$('#accordion').accordion('add', {
+	    				title: movieTitle,
+	    				content: $(searchItemTmpl.tmpl({
+	    							"searchTerm" : movieTitle						
+	    						})),
+	    				selected: true
+	    			});		  
 	        		
-	        		$(movieDataSourceTmpl.tmpl({
-						"site" : briefMovieInfo[0].site						
-					})).appendTo('#'+ $.trim($('.movie-title').val()));	        		
+	        		briefMovieInfo = $.parseJSON(response.responseBody);	           			        		
+	        		
+	        		if(briefMovieInfo[0].site){
+	        			$(movieDataSourceTmpl.tmpl({
+							"site" : briefMovieInfo[0].site						
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
+	        		}
 	        		
 		        	$.each(briefMovieInfo,function(index, value){
 		        		$(movieItemTmpl.tmpl({
@@ -179,19 +188,13 @@
 							"year" : value.year,
 							"director" : value.director,
 							"id" : value.id
-						})).appendTo('#'+value.site);
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('#'+value.site));
 		        		site = value.site;
 	        		});
-		        	$('#'+site).tree({animate:true});
-	
-		        	//contentArea.accordion({animate:true, selected:true});
-		        	
-	        		$('.search-term').on('click',function(e){
-	        			$(e.target).closest('div').remove();
-					});
+		        	$('#accordion').accordion('getPanel',movieTitle).find('#'+site).tree({animate:true});			        		        		
 	        		
 	        		$('.movie-id').on('click',function(e){
-						$('.detailedMovieInfo').append($(this).closest('ul').html());
+	        			$.proxy(that.getDetailedData, that);
 					});    				
 	        		
 	        	}else{ //the response is empty
@@ -248,17 +251,69 @@
 			this.request.method='POST';
 			this.request.url=this.$ctx.data('search-url');
 			
-			$(searchItemTmpl.tmpl({
-				"searchTerm" : movieTitle						
-			})).appendTo(contentArea);	
-        	contentArea.accordion({animate:true});
-        	
+			/*$('#accordion').accordion('add', {
+				title: movieTitle,
+				content: $(searchItemTmpl.tmpl({
+							"searchTerm" : movieTitle						
+						})),
+				selected: false
+			});		  */      	
         	this.subSocket.push(JSON.stringify(movieData));		    
         	
         	
 		},
 				
 	});
+	
+	$(function(){  
+	    $('.ez-template').bind('click', function(){  
+	    	$('.panel-header').addClass("panel-header-ez");
+	    	$('.layout-split-north').addClass("layout-split-north-ez");
+	    	$('.layout-split-south').addClass("layout-split-south-ez");
+	    	$('.layout-split-east').addClass("layout-split-east-ez");
+	    	$('.layout-split-west').addClass("layout-split-west-ez");
+	    	
+	    	$('.layout-button-up').addClass("layout-button-up-ez");
+	    	$('.layout-button-down').addClass("layout-button-down-ez");
+	    	$('.layout-button-left').addClass("layout-button-left-ez");
+	    	$('.layout-button-right').addClass("layout-button-right-ez");
+	    	
+	    	$('.layout-expand').addClass("layout-expand-ez");	    
+	    	$('.panel-body').addClass("panel-body-ez");	  
+	    	$('.header').addClass("header-ez");
+	    });  
+	    
+	    $('.basic-template').bind('click', function(){  
+	    	$('.panel-header-ez').removeClass("panel-header-ez");
+	    	$('.layout-split-north-ez').removeClass("layout-split-north-ez");
+	    	$('.layout-split-south-ez').removeClass("layout-split-south-ez");
+	    	$('.layout-split-east-ez').removeClass("layout-split-east-ez");
+	    	$('.layout-split-west-ez').removeClass("layout-split-west-ez");	  
+	    	
+	    	$('.layout-button-up-ez').removeClass("layout-button-up-ez");
+	    	$('.layout-button-down-ez').removeClass("layout-button-down-ez");
+	    	$('.layout-button-left-ez').removeClass("layout-button-left-ez");
+	    	$('.layout-button-right-ez').removeClass("layout-button-right-ez");	    	
+	    	
+	    	$('.layout-expand-ez').removeClass("layout-expand-ez");	    
+	    	$('.panel-body-ez').removeClass("panel-body-ez");	
+	    	$('.header-ez').removeClass("header-ez");	    	
+	    });  
+	    
+	    $('.layout-button-left').bind('click', function(){
+	    	if($('.panel-header').hasClass("panel-header-ez")) {
+		    	$('.layout-expand').addClass("layout-expand-ez");	    
+		    	$('.panel-body').addClass("panel-body-ez");	    				    	
+	    	}
+	    });
+	    
+	    $('.layout-button-right').bind('click', function(){
+	    	if(!$('.panel-header').hasClass("panel-header-ez")) {
+		    	$('.layout-expand-ez').removeClass("layout-expand-ez");	    
+		    	$('.panel-body-ez').removeClass("panel-body-ez");	    				    	
+	    	}
+	    });
+	}); 
 
 	/* Attach page specific behavior on page load */
 	$(function() {

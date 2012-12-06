@@ -4,10 +4,25 @@
         
         <div data-options="region:'north'" style="height:102px">
         <header id="header">
+        <div class="header">
 			<h2 id="title"><spring:message code="searchPage.title"/></h2>
-			<div>
+			<div id="locale-changer" class="meta-menu">
 				<%@include file="/WEB-INF/views/localeChanger.jsp"%>
 			</div>	
+			<div class="meta-menu">
+				<div class="layout-state"">  
+			        <a href="#" class="easyui-splitbutton" data-options="menu:'#mm1',iconCls:'icon-edit'">${currentTemplate}</a>  
+			    </div>
+			    <div id="mm1" style="width:150px;">
+			    	<div data-options="iconCls:'icon-ok'" class="basic-template" onclick="<c:set var='currentTemplate' value='Basic Template' />">
+			    		Basic Template
+			    	</div>  
+			        <div data-options="iconCls:'icon-cancel'" class="ez-template" onclick="<c:set var='currentTemplate' value='EZ Studios Template' />">									    	
+			        	EZ Studios Template
+			        </div>  
+			    </div>  
+			</div>
+		</div>
 		</header>
         </div>  
         
@@ -15,8 +30,8 @@
             <div class="easyui-layout" data-options="fit:true">  
                 <div data-options="region:'north' ,split:true,border:false" style="height:65px">
                 	<header class="user-input-zone">
+					 	<button class="search-button user-input add"><spring:message code="searchPage.button.add"/></button>               	
 					 	<input  class="user-input movie-title" placeholder="<spring:message code="searchPage.movie.title.placeholder"/>" />
-					 	<button class="search-button user-input add"><spring:message code="searchPage.button.add"/></button>
 					 </header>                
                 </div>  
                 <div data-options="region:'west', title:'<spring:message code="searchPage.movie.briefdata"/>',split:true,border:false" style="width:500px">

@@ -22,13 +22,13 @@
 
 /*** Input Placeholders ****/
 ::-webkit-input-placeholder {
-	color:#eee;
+	color:#cbebff;
 }
 :-moz-placeholder {
-	color:#eee;
+	color:#cbebff;
 }
 :-ms-input-placeholder {
-	color:#eee;
+	color:#cbebff;
 }
 .left {
 	float:left;
