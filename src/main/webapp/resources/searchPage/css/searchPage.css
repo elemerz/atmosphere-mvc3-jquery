@@ -25,12 +25,12 @@
 }
 
 #searchPage  .user-input {
-	float: right;
+	float: left;
 	height: 94%;
 	width: 70%;
 }
 #searchPage  button.user-input {
-	float:left;
+	float:right;
 	height: 100%;
 	width: 28.5%;
 }
