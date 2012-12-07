@@ -16,6 +16,12 @@ import ro.isdc.model.HtmlNodePathMapper;
 import ro.isdc.model.MovieInfo;
 import ro.isdc.model.SimpleMovieInfo;
 
+/**.
+ * XPath parser implementation
+ * 
+ * @author felix.cosma
+ *
+ */
 public class XPathLocalizer  implements ElementLocalizer {
 	
 	ArrayList<SimpleMovieInfo> moviesResults = new ArrayList<SimpleMovieInfo>();
@@ -49,7 +55,6 @@ public class XPathLocalizer  implements ElementLocalizer {
 					movieItem.setId(id);
 					movieItem.setSite(websiteId);
 					movieResultsMap.put(title+year, movieItem);
-//					moviesResults.add(movieItem);
 				}
 			}
 		} catch (Exception e) {
@@ -67,10 +72,31 @@ public class XPathLocalizer  implements ElementLocalizer {
 	}
 
 	@Override
-	public MovieInfo getMovieDetails(String htmlContent, String websiteId,
-			HtmlNodePathMapper websitesXPATHMapper) {
-		// TODO Auto-generated method stub
-		return null;
+	public MovieInfo getMovieDetails(String htmlContent, String websiteId, HtmlNodePathMapper htmlNodePathMapper) {
+	
+		MovieInfo movieItem = new MovieInfo();
+		 		
+	    try {
+	    	String listXpath = htmlNodePathMapper.getNodePathMap().get(websiteId + ".root");
+	    	Object[] listOfMovies = cleanWithHtmlCleaner(htmlContent, websiteId, listXpath);
+	    	TagNode listItem = (TagNode) listOfMovies[0];
+	    	
+			String rate = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".rate"));
+			String description = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".description"));
+			String cast = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".cast"));
+			String genre = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".genre"));
+			String runtime = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".runtime"));
+
+			movieItem.setRate(rate);
+			movieItem.setDescription(description);
+			movieItem.setCast(cast);
+			movieItem.setGenre(genre);
+			movieItem.setRuntime(runtime);		
+		
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		return movieItem;
 	}
 	
 	/**
@@ -94,7 +120,6 @@ public class XPathLocalizer  implements ElementLocalizer {
 			        
 			        return resultsList;
 	}
-	
 	
 	/**
 	 * Retrieve element string using xpath

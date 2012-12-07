@@ -3,28 +3,13 @@ package ro.isdc.model;
 /**
 @author Dan Cirja
  */
-public class MovieInfo extends SimpleMovieInfo {
+public class MovieInfo {
 
 	private String rate;
 	private String description;
 	private String cast;
 	private String genre;
-	private String runtime;
-	
-	public MovieInfo() {
-		
-	}
-	public MovieInfo(String id, String title, String year, String director, String source, 
-			String rate, String description, String cast, String genre, String runtime) {
-		
-		super(id, title, year, director, source);
-		
-		this.rate = rate;
-		this.description = description;
-		this.cast = cast;
-		this.genre = genre;
-		this.runtime = runtime;
-	}
+	private String runtime;	
 	
 	public String getRate() {
 		return rate;
