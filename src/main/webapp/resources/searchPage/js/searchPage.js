@@ -58,6 +58,7 @@
 			var that=this;
 			//bind search page Behavior:
 			this.$addButton.on('click', $.proxy(this.processRequest, this));
+			this.$searchTerm.on('keydown', $.proxy(this.processRequestOnEnter, this));	
 			this.$accordion=this.$contentArea.accordion({heightStyle: "content", collapsible: true, active: false});			
 		},
 		/**Open a bi-directional communication channel between the browser and the specified server.*/
@@ -167,7 +168,7 @@
 			}).get();
 			// put the search term into the movieData object
 			if($('.movie-title').val()!==""){
-				movieData.searchTerms.push($('.movie-title').val());	
+				movieData.searchTerms.push(encodeURIComponent($('.movie-title').val()));	
 			}		
 			
 			$.atmosphere.log('info', [movieData]);
@@ -191,6 +192,13 @@
 				selected: true
 			});		  
         	this.subSocket.push(JSON.stringify(movieData));		    
+		},
+		
+		/**Process request on Enter keypress*/
+		processRequestOnEnter: function(e){
+			  if (e.keyCode === 13) {
+				  $.proxy(this.processRequest(e), this);
+			  }
 		},
 		
 		/**Sends a request to server with a movie id to get detailed data about that movie*/
