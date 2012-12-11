@@ -12,8 +12,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ro.isdc.model.DetailedSearchInputModel;
 import ro.isdc.model.InfoSource;
-import ro.isdc.model.MovieInfoSource;
+import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.SearchInputModel;
 
 /**
@@ -103,18 +104,33 @@ public class InfoSourceConfig {
 		this.siteConfig = siteConfig;
 	}
 	
-	public  List<MovieInfoSource> getMoviesInfoSource(SearchInputModel searchModel) {
+	/**
+	 * 
+	 * @param reqSearch represents the object containing the info mapped from the json string received from the client
+	 * @return the infosources on which the search will be performed
+	 */
+	public  List<InfoSourceModel> getInfoSourcesBriefSearch(SearchInputModel reqSearch) {
 		
-		List<MovieInfoSource> movieInfoSourcesList  = new ArrayList<MovieInfoSource>();
-		
-		for (String infoSourceKey : searchModel.getInfoSourceKeys()) {
-			
-			movieInfoSourcesList.add(getSiteConfig().getConfigMap().get(infoSourceKey));
-			
+		List<InfoSourceModel> infoSourcesList  = new ArrayList<InfoSourceModel>();
+		for (String infoSourceKey : reqSearch.getInfoSourceKeys()) {
+			infoSourcesList.add(getSiteConfig().getConfigMap().get(infoSourceKey));
 		}
 		
-		return movieInfoSourcesList;
+		return infoSourcesList;
 		
 	}
+	/**
+	 * 
+	 * @param reqSearch represents the object containing the info mapped from the json string received from the client
+	 * @return the infosource on which detailed data about a movie is searched
+	 */
+	public  InfoSourceModel getInfoSourceDetailedSearch(SearchInputModel reqSearch) {
+		
+		InfoSourceModel infoSource  = new InfoSourceModel();			
+			infoSource = getSiteConfig().getConfigMap().get(reqSearch.getInfoSourceKeys().get(0));
+		return infoSource;
+		
+	}
+	
 	
 }

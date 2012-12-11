@@ -8,7 +8,8 @@
     <css>/resources/common/css/reset.meyer-2.0.min.css</css>    
     <css>/resources/common/css/base.css</css>
     <css>/resources/localeChanger/css/localeChanger.css</css>
-    <css>/resources/common/css/easyui.css</css>    
+    <css>/resources/common/css/easyui.css</css>  
+    <css>/resources/common/css/icon.css</css>
     
     <!-- Common scripts -->
     <js>/resources/inheritance/js/inheritance-1.0.min.js</js>

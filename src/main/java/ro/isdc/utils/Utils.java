@@ -29,6 +29,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import ro.isdc.model.InfoSource;
+import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.MovieInfoPostData;
 import ro.isdc.model.MovieInfoSource;
 import ro.isdc.model.SearchInputModel;
@@ -38,19 +39,34 @@ public class Utils {
 	
 	private static  final String REX_TEMPLATE_VALUE = "\\$\\{(\\w+)\\}";
 	
-	public static HttpUriRequest getRequest(MovieInfoSource infoSource, String movieName) {
+	public static HttpUriRequest getRequestForBriefMovieData(InfoSourceModel infoSource, String movieName) {
 		
 		HttpUriRequest request = null;
 		
-		if (infoSource.getBriefSearchMethod().equalsIgnoreCase("get")) {
-			request = new HttpGet(infoSource.getBriefSearchURL().replace("{title}", movieName));
+		if (infoSource.getSearchMethods().get("briefSearchMethod").equalsIgnoreCase("get")) {
+			request = new HttpGet(infoSource.getSearchURLs().get("briefSearchURL").replace("{title}", movieName));
 			
-		} else if(infoSource.getBriefSearchMethod().equalsIgnoreCase("post")) {
-			request = new HttpPost(infoSource.getBriefSearchURL());
+		} else if(infoSource.getSearchMethods().get("briefSearchMethod").equalsIgnoreCase("post")) {
+			request = new HttpPost(infoSource.getSearchURLs().get("briefSearchURL"));
 		}
 		
 		return request;
 		
+	}
+	
+	public static HttpUriRequest getRequestForDetailedMovieData(InfoSourceModel infoSource, String movieId) {
+			
+			HttpUriRequest request = null;
+			
+			if (infoSource.getSearchMethods().get("fullSearchMethod").equalsIgnoreCase("get")) {
+				request = new HttpGet(infoSource.getSearchURLs().get("fullSearchURL").replace("{movieId}", movieId));
+				
+			} else if(infoSource.getSearchMethods().containsKey("post")) {
+				request = new HttpPost(infoSource.getSearchURLs().get("fullSearchURL"));
+			}
+			
+			return request;
+			
 	}
 	
 	public static boolean isTemplatedValue(final String val) {

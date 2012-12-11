@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,10 +26,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import ro.isdc.InfoSourceConfig;
 import ro.isdc.model.HtmlNodePathMapper;
-import ro.isdc.model.MovieInfoSource;
+import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.SearchInputModel;
-import ro.isdc.model.DetailedMovieDataModel;
-import ro.isdc.services.IMovieRetrieverBusinessManager;
+import ro.isdc.model.DetailedSearchInputModel;
+import ro.isdc.services.MovieRetriever;
 import ro.isdc.utils.Utils;
 
 /**
@@ -43,11 +44,9 @@ public class WMCController extends LocaleAwareController{
 	@Autowired
 	HtmlNodePathMapper htmlNodePathMapper;	
 	
-	//TODO: Refactor to MovieRetriever 
-	@Autowired
-	@Qualifier("movieRetrieverBM")
-	IMovieRetrieverBusinessManager movieRetrieverBM;
-	
+	@Autowired	
+	@Qualifier("movieRetriever")
+	MovieRetriever movieRetriever;
 	private static final Logger logger = LoggerFactory.getLogger(WMCController.class);
 	
 	/**
@@ -86,19 +85,26 @@ public class WMCController extends LocaleAwareController{
 	
 	@RequestMapping(value = "/search", method = RequestMethod.POST)
 	@ResponseBody
-	public void search(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException {
+	public void search(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException, InterruptedException {
 //		AtmosphereUtil.suspend(atmosphereResource); 
 		
 			SearchInputModel reqSearch = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);	
-			List<MovieInfoSource> infoSourcesList =  infoSourceConfig.getMoviesInfoSource(reqSearch);
-			if (reqSearch != null) {
-				try {
-					movieRetrieverBM.getBriefMoviesResult(atmosphereResource,reqSearch, infoSourcesList,  htmlNodePathMapper);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}		
+			List<InfoSourceModel> infoSourcesList =  infoSourceConfig.getInfoSourcesBriefSearch(reqSearch);
+				for (String searchTerm : reqSearch.getSearchTerms()) {
+					for (InfoSourceModel infoSourceModel : infoSourcesList) {							
+						movieRetriever.retrieveMovieData(atmosphereResource,searchTerm,infoSourceModel, htmlNodePathMapper, false);	//the boolean param is true for detailed data request
+					}
+				}	
 	}	
+	
+	@RequestMapping(value = "/searchDetailedData", method = RequestMethod.POST)
+	@ResponseBody
+	public void searchDetailedData(AtmosphereResource atmosphereResource, @RequestBody String searchModelAsJson) throws JsonGenerationException, JsonMappingException, IOException, InterruptedException {		
+			SearchInputModel requestDetailedData = Utils.getJsonAsObject(searchModelAsJson, SearchInputModel.class);				
+			InfoSourceModel infoSourceModel = infoSourceConfig.getInfoSourceDetailedSearch(requestDetailedData);
+			movieRetriever.retrieveMovieData(atmosphereResource,requestDetailedData.getSearchTerms().get(0),infoSourceModel, htmlNodePathMapper, true);	
+			
+	}
 
 	private void suspend(final AtmosphereResource resource) {
 		final CountDownLatch countDownLatch = new CountDownLatch(1);

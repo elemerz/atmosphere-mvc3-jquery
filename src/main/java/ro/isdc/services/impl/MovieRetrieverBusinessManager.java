@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import ro.isdc.InfoSourceConfig;
 import ro.isdc.model.HtmlNodePathMapper;
-import ro.isdc.model.MovieInfoSource;
+import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.SearchInputModel;
 import ro.isdc.services.IMovieRetrieverBusinessManager;
 import ro.isdc.services.MovieRetriever;
@@ -24,10 +24,10 @@ public class MovieRetrieverBusinessManager implements
 	private MovieRetriever retriever;
 	@Override
 	public void getBriefMoviesResult(AtmosphereResource atmosphereResource, SearchInputModel reqSearch,
-			List<MovieInfoSource> infoSources,  HtmlNodePathMapper  htmlNodePathMapper) throws IOReactorException,
+			List<InfoSourceModel> infoSources,  HtmlNodePathMapper  htmlNodePathMapper) throws IOReactorException,
 			InterruptedException {
 
-		retriever.execute(reqSearch, infoSources, atmosphereResource, htmlNodePathMapper);
+		//retriever.execute(reqSearch, infoSources, atmosphereResource, htmlNodePathMapper);
 
 	}
 

@@ -11,13 +11,13 @@
 			</div>	
 			<div class="meta-menu">
 				<div class="layout-state"">  
-			        <a href="#" class="easyui-splitbutton" data-options="menu:'#mm1',iconCls:'icon-edit'">${currentTemplate}</a>  
+			        <a href="#" class="easyui-splitbutton" data-options="menu:'#mm1',iconCls:'icon-ok'">${currentTemplate}</a>  
 			    </div>
 			    <div id="mm1" style="width:150px;">
-			    	<div data-options="iconCls:'icon-ok'" class="basic-template" onclick="<c:set var='currentTemplate' value='Basic Template' />">
+			    	<div data-options="iconCls:'icon-edit'" class="basic-template" onclick="<c:set var='currentTemplate' value='Basic Template' />">
 			    		Basic Template
 			    	</div>  
-			        <div data-options="iconCls:'icon-cancel'" class="ez-template" onclick="<c:set var='currentTemplate' value='EZ Studios Template' />">									    	
+			        <div data-options="iconCls:'icon-edit'" class="ez-template" onclick="<c:set var='currentTemplate' value='EZ Studios Template' />">									    	
 			        	EZ Studios Template
 			        </div>  
 			    </div>  
@@ -60,12 +60,13 @@
     </div>  
     
 <%-- MovieItemTemplates --%>	
-<textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm} data-options="iconCls:'icon-save'"></div></textarea>
+<textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm}></div></textarea>
 <textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul id={site}></ul></li></ul></textarea>
 <textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
 <%--Messages Component--%>
 <input type="hidden" class="messages"
 data-search-url='${pageContext.request.contextPath}/searchMovies/'
+data-detailedSearch-url='${pageContext.request.contextPath}/searchDetailedData/'
 data-searchPage.no.infosource.selected='<spring:message code="searchPage.no.infosource.selected"/>'
 data-searchpage.movie.required='<spring:message code="searchPage.movie.required"/>'
 data-searchPage.server.error='<spring:message code="searchPage.server.error"/>'

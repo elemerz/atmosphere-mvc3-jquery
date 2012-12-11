@@ -1,18 +1,21 @@
 package ro.isdc.services;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.Map.Entry;
 
-import org.apache.http.HeaderIterator;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpResponse;
-import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.CookiePolicy;
@@ -20,9 +23,15 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.nio.client.DefaultHttpAsyncClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.nio.reactor.IOReactorException;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.CoreProtocolPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
@@ -30,16 +39,17 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.stereotype.Component;
 
 import ro.isdc.model.HtmlNodePathMapper;
+import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.MovieInfoPostData;
-import ro.isdc.model.MovieInfoSource;
-import ro.isdc.model.SearchInputModel;
+import ro.isdc.model.PostData;
 import ro.isdc.model.SimpleMovieInfo;
+import ro.isdc.parser.SourceParser;
 import ro.isdc.parser.impl.SourceParserImpl;
 import ro.isdc.utils.Utils;
 
-@Component
-public class MovieRetriever {
-
+@Component("movieRetriever")
+public class MovieRetriever{
+	
 	private HttpHost proxy = null;
 
 	public MovieRetriever() {
@@ -51,219 +61,245 @@ public class MovieRetriever {
 		}
 	}
 
-	public void execute(final SearchInputModel reqSearch, final List<MovieInfoSource> infoSources, final AtmosphereResource atmoResource,
-			final HtmlNodePathMapper htmlNodePathMapper) throws InterruptedException, IOReactorException {
-
-		HttpAsyncClient httpclient = new DefaultHttpAsyncClient();
-		initParams(httpclient);
-		httpclient.start();
-
-		final CountDownLatch latch = new CountDownLatch(infoSources.size());
-		try {
-
-			for (String movieName : reqSearch.getSearchTerms()) {
-
-				for (final MovieInfoSource infoSource : infoSources) {
-
-					final HttpUriRequest uri = Utils.getRequest(infoSource, movieName);
-
-					if (infoSource.getBriefSearchMethod().equalsIgnoreCase("get")) {
-						httpclient.execute(uri, new FutureCallback<HttpResponse>() {
-
-							@Override
-							public void failed(Exception ex) {
-								latch.countDown();
-								System.out.println(uri.getRequestLine() + "->" + ex);
-
-							}
-
-							@Override
-							public void completed(HttpResponse result) {
-								latch.countDown();
-								try {
-									String responseAsString = EntityUtils.toString(result.getEntity());
-									SourceParserImpl parser = new SourceParserImpl();
-									String uriRequested = uri.getURI().getHost();
-									uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
-
-									ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
-
-									for (SimpleMovieInfo item : movies) {
-										System.out.println("Title");
-										System.out.println(item.getTitle());
-									}
-
-									final ObjectMapper mapper = new ObjectMapper();
-									String moviesAsJson = mapper.writeValueAsString(movies);
-
-									System.out.println(moviesAsJson);
-
-									if (atmoResource != null) {
-										Broadcaster broadcaster = atmoResource.getBroadcaster();
-										
-										broadcaster.broadcast(moviesAsJson);
-									}
-
-								} catch (Exception e) {
-
-									e.printStackTrace();
-								}
-
-							}
-
-							@Override
-							public void cancelled() {
-								latch.countDown();
-								System.out.println(uri.getRequestLine() + " cancelled");
-
-							}
-						});
-
-					} else if (infoSource.getBriefSearchMethod().equalsIgnoreCase("post")) {
-
-						MovieInfoPostData movieInfoPostData = infoSource.getPost();
-
-						if (movieInfoPostData != null && movieInfoPostData.getUsesCookies().equalsIgnoreCase("true")) {
-							// We have to make a sync request to establish cookies
-							HttpUriRequest syncRequest = new HttpGet(movieInfoPostData.getFetchCookieURL());
-
-							// Create an instance of HttpClient with the params.
-							DefaultHttpClient syncClient = new DefaultHttpClient();
-							syncClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
-							initParams(syncClient);
-
-							Map<String, String> briefPostHeaders = movieInfoPostData.getBriefPostHeaders();
-
-							Utils.setHeaders(briefPostHeaders, syncRequest);
-							Utils.setHeaders(briefPostHeaders, uri);
-							HttpResponse syncResponse = syncClient.execute(syncRequest);
-
-							HeaderIterator it = syncResponse.headerIterator("Set-Cookie");
-							String joinedCookies = "";
-
-							while (it.hasNext()) {
-								joinedCookies += it.next().getValue() + "; ";
-							}
-
-							Utils.setHeaders(movieInfoPostData.getBriefPostBody(), uri, movieName);
-
-							String cookiesTemplate = briefPostHeaders.get("cookies");
-
-							if (cookiesTemplate != null) {
-								Map<String, String> replacements = Utils.resolveCookieTokens(joinedCookies);
-								String solvedTemplate = Utils.resolveTemplate(cookiesTemplate, replacements);
-								uri.addHeader("Cookie", solvedTemplate);
-							}
-
-							httpclient.execute(uri, new FutureCallback<HttpResponse>() {
-
-								@Override
-								public void failed(Exception ex) {
-									// TODO Auto-generated method stub
-
-								}
-
-								@Override
-								public void completed(HttpResponse result) {
-									try {
-										String responseAsString = EntityUtils.toString(result.getEntity());
-										System.out.println(responseAsString);
-									} catch (ParseException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-
-								}
-
-								@Override
-								public void cancelled() {
-									// TODO Auto-generated method stub
-
-								}
-							});
-						} else {
-
+	public void retrieveMovieData(final AtmosphereResource atmosphereResource,String searchTerm,InfoSourceModel infoSourceModel, final HtmlNodePathMapper htmlNodePathMapper, boolean detailedMovieData) throws IOReactorException, InterruptedException{
+		HttpUriRequest uri = null;	
+		String searchMethod = null;
+			//check if the request was for detailed movie data, to obtain the correct uri
+			if(detailedMovieData){
+				uri = Utils.getRequestForDetailedMovieData(infoSourceModel, searchTerm);
+				searchMethod = infoSourceModel.getSearchMethods().get("fullSearchMethod");				
+			}else{
+				uri = Utils.getRequestForBriefMovieData(infoSourceModel, searchTerm);				
+				searchMethod = infoSourceModel.getSearchMethods().get("briefSearchMethod");
+			}			
+			if(searchMethod.equalsIgnoreCase("post")){
+				HttpPost httpPost = (HttpPost) uri;
+				List<BasicNameValuePair> nameValuePairs = new ArrayList<BasicNameValuePair>(1);
+				if(infoSourceModel.getUsesCookies().equals("true")){
+					HttpParams postParams = new BasicHttpParams();
+					Map<String,String> postDataMap =  infoSourceModel.getPost().get("briefPostData").getPostDataMap();
+					Iterator<Entry<String, String>> it = postDataMap.entrySet().iterator();
+					while(it.hasNext()){
+						Map.Entry<String, String> m = it.next();
+						if(m.getValue().equalsIgnoreCase("{title}")){
+							m.setValue(searchTerm);
 						}
-
-					}
-
-				}
-
-			}
-			latch.await();
-			System.out.println("Shutting down");
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			httpclient.shutdown();
-		}
-		System.out.println("Done");
-	}
-
-	public void execute(final HttpUriRequest request, final AtmosphereResource atmoResource, final HtmlNodePathMapper htmlNodePathMapper) throws InterruptedException,
-			IOReactorException {
-		HttpAsyncClient httpclient = new DefaultHttpAsyncClient();
-		initParams(httpclient);
-		httpclient.start();
-		try {
-			System.out.println("inainte de httpclient: " + Thread.currentThread().getName());
-			httpclient.execute(request, new FutureCallback<HttpResponse>() {
-
-				public void completed(final HttpResponse response) {
-
+						postParams.setParameter(m.getKey(), m.getValue());	
+						nameValuePairs.add(new BasicNameValuePair(m.getKey(),m.getValue()));
+					}							
 					try {
-						String responseAsString = EntityUtils.toString(response.getEntity());
-						SourceParserImpl parser = new SourceParserImpl();
-
-						String uri = request.getURI().getHost();
-						uri = uri.subSequence(uri.indexOf('.') + 1, uri.lastIndexOf('.')).toString();
-
-						// TODO: Feed the full movie details HTML to the parser
-						// TODO: Send the response to the client
-
-					} catch (Exception e) {
+						httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+					} catch (UnsupportedEncodingException e) {
 						e.printStackTrace();
 					}
+					httpPost.setHeader("User-Agent", infoSourceModel.getPresetHeaders().get("User-Agent"));
+					HttpContext httpContext  = retrieveContext(infoSourceModel);					
+					executeRequest(atmosphereResource, httpPost, htmlNodePathMapper, detailedMovieData, httpContext);
+				}
+			}else{// the search method is "get", so we don't need a HttpContext
+					executeRequest(atmosphereResource, uri, htmlNodePathMapper, detailedMovieData, null);
+			}	
+						
+	};
+		
+	private void executeRequest(final AtmosphereResource atmosphereResource, final HttpUriRequest uri, final HtmlNodePathMapper htmlNodePathMapper, final boolean detailedMovieData, HttpContext httpContext) throws InterruptedException, IOReactorException{
+		final HttpAsyncClient httpClient = new DefaultHttpAsyncClient();
+		initParams(httpClient);		
+		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
+		httpClient.start();
+		if(httpContext!=null){
+			httpClient.execute(uri, httpContext, new FutureCallback<HttpResponse>(){
+				@Override
+				public void failed(Exception ex) {
+					System.out.println(uri.getRequestLine() + "->" + ex);
 				}
 
-				public void failed(final Exception ex) {
-					System.out.println(request.getRequestLine() + "->" + ex);
+				@Override
+				public void completed(HttpResponse result) {
+					
+					if(detailedMovieData){
+						try {
+							String responseAsString = EntityUtils.toString(result.getEntity());						
+							System.out.println(responseAsString);
+
+							if (atmosphereResource != null) {
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();						
+								broadcaster.broadcast(responseAsString);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally{
+							try {
+								httpClient.shutdown();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}else{
+						try {
+							String responseAsString = EntityUtils.toString(result.getEntity());
+							System.out.println(responseAsString);
+							SourceParserImpl parser = new SourceParserImpl();
+							String uriRequested = uri.getURI().getHost();
+							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
+
+							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
+
+							for (SimpleMovieInfo item : movies) {
+								System.out.println("Title");
+								System.out.println(item.getTitle());
+							}
+
+							final ObjectMapper mapper = new ObjectMapper();
+							String moviesAsJson = mapper.writeValueAsString(movies);
+
+							System.out.println(moviesAsJson);
+
+							if (atmosphereResource != null) {
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
+								
+								broadcaster.broadcast(moviesAsJson);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally{
+							try {
+								httpClient.shutdown();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
 				}
 
+				@Override
 				public void cancelled() {
-					System.out.println(request.getRequestLine() + " cancelled");
+					System.out.println(uri.getRequestLine() + " cancelled");
+
+				}
+			});	
+		// execute a request without being necessary to specify a context	
+		}else{
+			httpClient.execute(uri, new FutureCallback<HttpResponse>() {
+				@Override
+				public void failed(Exception ex) {
+					System.out.println(uri.getRequestLine() + "->" + ex);
 				}
 
-			});
-		} finally {
-			System.out.println("httpclient shut down: " + Thread.currentThread().getName());
-			httpclient.shutdown();
+				@Override
+				public void completed(HttpResponse result) {
+					
+					if(detailedMovieData){
+						try {
+							String responseAsString = EntityUtils.toString(result.getEntity());						
+							System.out.println(responseAsString);
 
+							if (atmosphereResource != null) {
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();						
+								broadcaster.broadcast(responseAsString);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally{
+							try {
+								httpClient.shutdown();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}else{
+						try {
+							String responseAsString = EntityUtils.toString(result.getEntity());
+							SourceParserImpl parser = new SourceParserImpl();
+							String uriRequested = uri.getURI().getHost();
+							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
+
+							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
+
+							for (SimpleMovieInfo item : movies) {
+								System.out.println("Title");
+								System.out.println(item.getTitle());
+							}
+
+							final ObjectMapper mapper = new ObjectMapper();
+							String moviesAsJson = mapper.writeValueAsString(movies);
+
+							System.out.println(moviesAsJson);
+
+							if (atmosphereResource != null) {
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
+								
+								broadcaster.broadcast(moviesAsJson);
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally{
+							try {
+								httpClient.shutdown();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					
+				}
+
+				@Override
+				public void cancelled() {
+					System.out.println(uri.getRequestLine() + " cancelled");
+
+				}
+			});						
 		}
-	}
+    }
 
+	private HttpContext retrieveContext(InfoSourceModel infoSourceModel) {
+				
+		HttpUriRequest syncRequest = new HttpGet(infoSourceModel.getSearchURLs().get("fetchCookieURL"));
+		syncRequest.setHeader("User-Agent", infoSourceModel.getPresetHeaders().get("User-Agent"));
+		// Create an instance of HttpClient with the params.
+		DefaultHttpClient syncClient = new DefaultHttpClient();
+		initParams(syncClient);
+		syncClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
+		
+		HttpContext httpContext = new BasicHttpContext();
+		httpContext.setAttribute(CoreProtocolPNames.USER_AGENT, infoSourceModel.getPresetHeaders().get("User-Agent"));
+		try {
+			HttpResponse response = syncClient.execute(syncRequest, httpContext);
+		} catch (ClientProtocolException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return httpContext;
+
+	}
+	
+	/**
+	 * Initialization of parameters for http asynchronous requests
+	 * @param httpclient
+	 */
 	private void initParams(HttpAsyncClient httpclient) {
-		httpclient.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 3000).setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 3000)
+		httpclient.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 5000).setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 5000)
 				.setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, 8 * 1024).setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true)
 				.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		if (proxy != null) {
 			httpclient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 	}
-
+    /**
+     * Initialization of parameters for http synchronous requests
+     * @param httpclient
+     */
 	private void initParams(HttpClient httpclient) {
-		httpclient.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 3000).setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 3000)
+		httpclient.getParams().setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 5000).setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 5000)
 				.setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, 8 * 1024).setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true)
 				.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		if (proxy != null) {
 			httpclient.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		}
 	}
+		
+
 }

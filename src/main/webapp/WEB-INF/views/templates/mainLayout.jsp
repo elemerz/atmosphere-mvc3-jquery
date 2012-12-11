@@ -17,6 +17,7 @@
 	-->
 	<link rel="stylesheet" href="${ctx}/resources/searchPage/css/searchPage.css" media="all" />
 	<link rel="stylesheet" href="${ctx}/resources/common/css/easyui.css" />
+	<link rel="stylesheet" href="${ctx}/resources/common/css/icon.css" />
 	
 </head>
 

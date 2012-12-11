@@ -15,19 +15,19 @@ public class InfoSource {
 	/**
 	 * Map containing the information for all sites.
 	 */
-	private Map<String, MovieInfoSource> configMap = new HashMap<String, MovieInfoSource>();
+	private Map<String, InfoSourceModel> configMap = new HashMap<String, InfoSourceModel>();
 
 	/**
 	 * @return the configMap
 	 */
-	public Map<String, MovieInfoSource> getConfigMap() {
+	public Map<String, InfoSourceModel> getConfigMap() {
 		return configMap;
 	}
 
 	/**
 	 * @param configMap the configMap to set
 	 */
-	public void setConfigMap(Map<String, MovieInfoSource> configMap) {
+	public void setConfigMap(Map<String, InfoSourceModel> configMap) {
 		this.configMap = configMap;
 	}
 	
