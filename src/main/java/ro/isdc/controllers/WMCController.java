@@ -28,7 +28,6 @@ import ro.isdc.InfoSourceConfig;
 import ro.isdc.model.HtmlNodePathMapper;
 import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.SearchInputModel;
-import ro.isdc.model.DetailedSearchInputModel;
 import ro.isdc.services.MovieRetriever;
 import ro.isdc.utils.Utils;
 

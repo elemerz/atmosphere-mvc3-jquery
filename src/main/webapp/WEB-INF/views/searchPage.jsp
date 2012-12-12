@@ -61,8 +61,8 @@
     
 <%-- MovieItemTemplates --%>	
 <textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm}></div></textarea>
-<textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul id={site}></ul></li></ul></textarea>
-<textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
+<textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul class={site}></ul></li></ul></textarea>
+<textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id} data-site={site}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
 <%--Messages Component--%>
 <input type="hidden" class="messages"
 data-search-url='${pageContext.request.contextPath}/searchMovies/'

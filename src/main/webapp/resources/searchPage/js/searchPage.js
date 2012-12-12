@@ -93,39 +93,62 @@
 			movieTitle = $('.movie-title',this.$ctx).val(), 
 			briefMovieInfo = null,
 			site = null,
-			that=this;
+			that=this,
+			treeTitlesArray = [],
+			panelContent = "";			
 			
 			$.atmosphere.log('info', ['onMessageReceived']);			
 
 			if(response.state === "messageReceived"){	            	
 	        	if(response.responseBody!==""){	        		        	
 	        		
-	        		briefMovieInfo = $.parseJSON(response.responseBody);	           			        		
+	        		briefMovieInfo = $.parseJSON(response.responseBody);	 
 	        		
-	        		if(briefMovieInfo[0].site){
-	        			$(movieDataSourceTmpl.tmpl({
-							"site" : briefMovieInfo[0].site						
-						})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
-	        		}
-	        		
-		        	$.each(briefMovieInfo,function(index, value){
-		        		site = value.site;
-		        		$(movieItemTmpl.tmpl({
-							"title" : value.title,
-							"year" : value.year,
-							"director" : value.director,
-							"id" : value.id
-						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('#'+site));
-	        		});
-		        	//generate a tree from the content of the accordion
-		        	$('#accordion').accordion('getPanel',movieTitle).find('#'+site).tree({animate:true});			        		        		
+	        		//we need the site value from the response in order to know where to place the information
+	        		if(briefMovieInfo[0].site){	        			
+	        			
+	        			panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body');
+			        	//change the loading icon with the delete icon, while keeping the current content
+						//$('#accordion').accordion('getPanel',movieTitle).panel({iconCls:'icon-cancel',content:panelContent});	   
+	        			$('.tree-title', panelContent).each(function(index){
+	        				treeTitlesArray.push($(this).html());
+	        			});						
+						//only add content if it doesn't exist in the treeTitlesArray
+						if($.inArray(briefMovieInfo[0].site,treeTitlesArray)===-1){
+							$(movieDataSourceTmpl.tmpl({
+								"site" : briefMovieInfo[0].site						
+							})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
+							
+							$.each(briefMovieInfo,function(index, value){
+				        		site = value.site;
+				        		$(movieItemTmpl.tmpl({
+									"title" : value.title,
+									"year" : value.year,
+									"director" : value.director,
+									"id" : value.id,
+									"site" : value.site
+								})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));
+			        		});
+				        			        	
+				        	//generate a tree from the content of the accordion
+				        	$('#accordion').accordion('getPanel',movieTitle).find('.'+site).closest('.easyui-tree').tree({animate:true});
+						}
+	        		}       			        			        				        					        	
+					
+					$('.icon-cancel').on('click', function(e){					
+						var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
+						if(p){
+							 index = $('#accordion').accordion('getPanelIndex', p);
+							 $('#accordion').accordion('remove',index);
+						}
+					});			
 	        		
 	        		$('.movie-id').on('click',function(e){
 	        			var detailedMovieData = {
         					"searchTerms" : [],
         					"infoSourceKeys" : []
 	        			};
-	        			detailedMovieData.infoSourceKeys.push($(this).closest('.tree').attr('id'));
+	        			detailedMovieData.infoSourceKeys.push($(this).data('site'));
 	        			detailedMovieData.searchTerms.push($(this).attr('id'));
 	        			$.proxy(that.getDetailedData(detailedMovieData),that);
 					});    				
@@ -160,7 +183,8 @@
 			}, 
 			movieTitle = $('.movie-title',this.$ctx).val(), 
 			contentArea = $('.search-results',this.$ctx), 
-			searchItemTmpl = $('#searchItemTmpl').val();						
+			searchItemTmpl = $('#searchItemTmpl').val(),
+			panelContent = "";						
 	
 			// map all the checked checkboxes' values into an array
 			movieData.infoSourceKeys = $('.info-sources :checked',this.$ctx).map(function() {
@@ -191,17 +215,14 @@
 							})),
 					selected: true,
 					iconCls: 'icon-cancel'
-				});	
-				$('.icon-cancel').on('click', function(e){					
-					var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
-					if(p){
-						 index = $('#accordion').accordion('getPanelIndex', p);
-						 $('#accordion').accordion('remove',index);
-					}
-				});				
+				});
 			}else{
-				//just open the existing panel
-				$('#accordion').accordion('select',movieTitle);				
+				//open the existing panel
+				$('#accordion').accordion('select',movieTitle);	
+				//get the current content of the panel 				
+				//panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body').html();
+				//change the delete icon with the loading icon, while keeping the current content
+				//$('#accordion').accordion('getPanel',movieTitle).panel({iconCls:'icon-loading', content:panelContent });
 			}	
 			
 			this.subSocket.response.request.method='POST';

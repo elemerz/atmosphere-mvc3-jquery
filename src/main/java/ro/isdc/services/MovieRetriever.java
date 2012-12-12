@@ -73,19 +73,21 @@ public class MovieRetriever{
 				searchMethod = infoSourceModel.getSearchMethods().get("briefSearchMethod");
 			}			
 			if(searchMethod.equalsIgnoreCase("post")){
+				//convert the uri to HttpPost in order to set the post Data via setEntity()
 				HttpPost httpPost = (HttpPost) uri;
 				List<BasicNameValuePair> nameValuePairs = new ArrayList<BasicNameValuePair>(1);
 				if(infoSourceModel.getUsesCookies().equals("true")){
-					HttpParams postParams = new BasicHttpParams();
+					
 					Map<String,String> postDataMap =  infoSourceModel.getPost().get("briefPostData").getPostDataMap();
-					Iterator<Entry<String, String>> it = postDataMap.entrySet().iterator();
+					Iterator<Entry<String, String>> it = postDataMap.entrySet().iterator();					
 					while(it.hasNext()){
 						Map.Entry<String, String> m = it.next();
 						if(m.getValue().equalsIgnoreCase("{title}")){
-							m.setValue(searchTerm);
+							//replace the title with the searchTerm typed by the user
+							nameValuePairs.add(new BasicNameValuePair(m.getKey(),searchTerm));
+						}else{
+							nameValuePairs.add(new BasicNameValuePair(m.getKey(),m.getValue()));
 						}
-						postParams.setParameter(m.getKey(), m.getValue());	
-						nameValuePairs.add(new BasicNameValuePair(m.getKey(),m.getValue()));
 					}							
 					try {
 						httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
