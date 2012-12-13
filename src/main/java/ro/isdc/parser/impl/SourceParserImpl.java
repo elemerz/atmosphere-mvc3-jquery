@@ -70,7 +70,24 @@ public class SourceParserImpl implements SourceParser {
 
 	@Override
 	public MovieInfo getMovieDetails(String htmlContent, String websiteId, HtmlNodePathMapper websitesXPATHMapper) {
-		// TODO to be implemented
-		return null;
+		ElementLocalizerType elementLocalizerType = getElementLocalizerType(websitesXPATHMapper);
+		
+		MovieInfo result = new MovieInfo();
+		htmlContent = removeScripts(htmlContent);
+		
+		switch (elementLocalizerType) {
+		case XPATH :
+			result = (new XPathLocalizer()).getMovieDetails(htmlContent, websiteId, websitesXPATHMapper);
+			break;
+
+		case CSS3PATH :
+			result = (new CSS3PathLocalizer()).getMovieDetails(htmlContent, websiteId, websitesXPATHMapper);
+			break;
+			
+		default:
+			break;
+		}
+        
+		return result;
 	}
 }

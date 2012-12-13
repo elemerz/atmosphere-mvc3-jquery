@@ -90,8 +90,9 @@
         	searchItemTmpl = $('#searchItemTmpl').val(),		        
 			movieDataSourceTmpl = $('#movieDataSourceTmpl').val(),
 			movieItemTmpl = $('#movieItemTmpl').val(),
+			detailedMovieItemTmpl = $('#detailedMovieItemTmpl').val(),
 			movieTitle = $('.movie-title',this.$ctx).val(), 
-			briefMovieInfo = null,
+			MovieData = null,
 			site = null,
 			that=this,
 			treeTitlesArray = [],
@@ -102,11 +103,9 @@
 			if(response.state === "messageReceived"){	            	
 	        	if(response.responseBody!==""){	        		        	
 	        		
-	        		briefMovieInfo = $.parseJSON(response.responseBody);	 
-	        		
+	        		MovieData = $.parseJSON(response.responseBody);	 
 	        		//we need the site value from the response in order to know where to place the information
-	        		if(briefMovieInfo[0].site){	        			
-	        			
+	        		if($.isArray(MovieData)){	        			
 	        			panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body');
 			        	//change the loading icon with the delete icon, while keeping the current content
 						//$('#accordion').accordion('getPanel',movieTitle).panel({iconCls:'icon-cancel',content:panelContent});	   
@@ -114,12 +113,12 @@
 	        				treeTitlesArray.push($(this).html());
 	        			});						
 						//only add content if it doesn't exist in the treeTitlesArray
-						if($.inArray(briefMovieInfo[0].site,treeTitlesArray)===-1){
+						if($.inArray(MovieData[0].site,treeTitlesArray)===-1){
 							$(movieDataSourceTmpl.tmpl({
-								"site" : briefMovieInfo[0].site						
+								"site" : MovieData[0].site						
 							})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
 							
-							$.each(briefMovieInfo,function(index, value){
+							$.each(MovieData,function(index, value){
 				        		site = value.site;
 				        		$(movieItemTmpl.tmpl({
 									"title" : value.title,
@@ -127,32 +126,38 @@
 									"director" : value.director,
 									"id" : value.id,
 									"site" : value.site
-								})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));
+								})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));				        						    				        		
 			        		});
-				        			        	
 				        	//generate a tree from the content of the accordion
 				        	$('#accordion').accordion('getPanel',movieTitle).find('.'+site).closest('.easyui-tree').tree({animate:true});
 						}
-	        		}       			        			        				        					        	
-					
-					$('.icon-cancel').on('click', function(e){					
-						var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
-						if(p){
-							 index = $('#accordion').accordion('getPanelIndex', p);
-							 $('#accordion').accordion('remove',index);
-						}
-					});			
-	        		
-	        		$('.movie-id').on('click',function(e){
-	        			var detailedMovieData = {
-        					"searchTerms" : [],
-        					"infoSourceKeys" : []
-	        			};
-	        			detailedMovieData.infoSourceKeys.push($(this).data('site'));
-	        			detailedMovieData.searchTerms.push($(this).attr('id'));
-	        			$.proxy(that.getDetailedData(detailedMovieData),that);
-					});    				
-	        		
+						//bind the getDetailedData() function to the elements which have the class "movie-id"
+		        		$('.movie-id').on('click',$.proxy(this.getDetailedData,this));
+		        		
+	        		}else{//we received the detailed movie info
+	        			if($('#tabs').tabs('exists',movieTitle)){	        				  
+	        				$('#tabs').tabs('getTab',movieTitle).html($(detailedMovieItemTmpl.tmpl({
+	 							"description" : MovieData.description,
+								"cast" : MovieData.cast,
+								"genre" : MovieData.genre,
+								"rate" :MovieData.rate,
+								"runtime" : MovieData.runtime
+							})));
+	        			}else{
+	        				$('#tabs').tabs('add',{  
+		        				 title: movieTitle,
+		        				 content: $(detailedMovieItemTmpl.tmpl({
+		 							"description" : MovieData.description,
+									"cast" : MovieData.cast,
+									"genre" : MovieData.genre,
+									"rate" :MovieData.rate,
+									"runtime" : MovieData.runtime
+								})),
+		        				closable: true
+		        				});	
+	        			}	        			   	        				        				        			
+	        		}       			        			        				        					        											
+	        			        		
 	        	}else{ //the response is empty
 	        		$.atmosphere.log('info', ["empty response"]);
 	            }
@@ -176,7 +181,6 @@
 		/**Sends a request to server with the search term and the movie infosources*/
 		processRequest: function(e){
 			var that= this,
-			$el = $(e.target), 
 			movieData = {
 			"searchTerms" : [],
 			"infoSourceKeys" : []
@@ -198,11 +202,31 @@
 			$.atmosphere.log('info', [movieData]);
 	
 			if (movieData.infoSourceKeys.length === 0) {
-				$.messager.alert('',this.$msg.data('searchpage.no.infosource.selected'),'info');
+				$.messager.show({
+						title : '',
+						msg: this.$msg.data('searchpage.no.infosource.selected'),
+						showType: 'slide',
+						timeout:3000,
+						style:{
+							right:'',
+							top:'',
+							bottom:document.body.scrollTop+document.documentElement.scrollTop
+						}
+				});
 				return false;
 			}
 			if (movieData.searchTerms.length === 0) {
-				$.messager.alert('',this.$msg.data('searchpage.movie.required'),'info');
+				$.messager.show({
+					title:'',
+					msg: this.$msg.data('searchpage.movie.required'),
+					showType: 'slide',
+					timeout:3000,
+					style:{
+						right:'',
+						top:document.body.scrollTop+document.documentElement.scrollTop,
+						bottom:''
+					}
+				});
 				return false;
 			}			
 			
@@ -216,6 +240,15 @@
 					selected: true,
 					iconCls: 'icon-cancel'
 				});
+				
+				$('.icon-cancel').on('click', function(e){					
+					var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
+					if(p){
+						 index = $('#accordion').accordion('getPanelIndex', p);
+						 $('#accordion').accordion('remove',index);
+					}
+				});			
+				
 			}else{
 				//open the existing panel
 				$('#accordion').accordion('select',movieTitle);	
@@ -238,12 +271,23 @@
 		},
 		
 		/**Sends a request to server with a movie id to get detailed data about that movie*/
-		getDetailedData: function(detailedMovieData){
+		getDetailedData: function(e){
 			var that= this,						
 			movieTitle = $('.movie-title',this.$ctx).val(), 
 			contentArea = $('.search-results',this.$ctx), 
-			searchItemTmpl = $('#searchItemTmpl').val();						
-	
+			searchItemTmpl = $('#searchItemTmpl').val(),						
+			detailedMovieData = {
+				"searchTerms" : [],
+				"infoSourceKeys" : []
+			},
+			$el = e.target;
+			
+			if($('#tabs').hasClass('display-none')){
+ 			   $('#tabs').removeClass('display-none');	
+ 			}	
+			
+			detailedMovieData.infoSourceKeys.push($($el).data('site'));
+			detailedMovieData.searchTerms.push($($el).attr('id'));
 			$.atmosphere.log('info', [detailedMovieData]);
 				
 			this.subSocket.response.request.method='POST';

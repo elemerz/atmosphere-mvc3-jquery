@@ -38,7 +38,9 @@
                  		<div id="accordion" class="search-results easyui-accordion"></div>                  							          				    	  
                 </div>  
                 
-                <div class="detailedMovieData" data-options="region:'center', title:'<spring:message code="searchPage.movie.detaileddata"/>',border:false"></div>  
+                <div class="detailedMovieData" data-options="region:'center', title:'<spring:message code="searchPage.movie.detaileddata"/>',border:false" style="height:665px">
+                	<div id="tabs" style="height:665px;" class="easyui-tabs display-none"></div>
+                </div>  
                 <div data-options="region:'south',split:true,border:false" style="height:50px">
                 	<ul class="info-sources">
 						<c:forEach var="infoSource" items="${infoSources}" varStatus="status">
@@ -63,6 +65,15 @@
 <textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm}></div></textarea>
 <textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul class={site}></ul></li></ul></textarea>
 <textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id} data-site={site}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
+<textarea id="detailedMovieItemTmpl" class="ui-helper-hidden">
+			<ul>
+				<li><span><spring:message code="searchPage.movie.description"/></span><ul><li>{description}</li></ul></li>
+				<li><span><spring:message code="searchPage.movie.cast"/></span><ul><li>{cast}</li></ul></li>
+				<li><span><spring:message code="searchPage.movie.genre"/></span><ul><li>{genre}</li></ul></li>
+				<li><span><spring:message code="searchPage.movie.rate"/></span><ul><li>{rate}</li></ul></li>
+				<li><span><spring:message code="searchPage.movie.runtime"/></span><ul><li>{runtime}</li></ul></li>				
+			</ul>
+</textarea>
 <%--Messages Component--%>
 <input type="hidden" class="messages"
 data-search-url='${pageContext.request.contextPath}/searchMovies/'

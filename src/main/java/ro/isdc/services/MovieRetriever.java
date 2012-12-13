@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import ro.isdc.model.HtmlNodePathMapper;
 import ro.isdc.model.InfoSourceModel;
+import ro.isdc.model.MovieInfo;
 import ro.isdc.model.MovieInfoPostData;
 import ro.isdc.model.PostData;
 import ro.isdc.model.SimpleMovieInfo;
@@ -124,10 +125,25 @@ public class MovieRetriever{
 							String responseAsString = EntityUtils.toString(result.getEntity());						
 							System.out.println(responseAsString);
 
-							if (atmosphereResource != null) {
-								Broadcaster broadcaster = atmosphereResource.getBroadcaster();						
-								broadcaster.broadcast(responseAsString);
+							SourceParserImpl parser = new SourceParserImpl();
+							String uriRequested = uri.getURI().getHost();
+							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
+
+							MovieInfo movieInfo = (MovieInfo) parser.getMovieDetails(responseAsString, uriRequested, htmlNodePathMapper);
+							String movieAsJson = "";
+							if(movieInfo!=null){
+								final ObjectMapper mapper = new ObjectMapper();
+								movieAsJson = mapper.writeValueAsString(movieInfo);
+								System.out.println(movieAsJson);								
+							}else {
+									System.out.println("The parser didn't retrieve any detailed movie information");									
 							}
+							
+							if (atmosphereResource != null) {
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
+								broadcaster.broadcast(movieAsJson);
+							}
+
 						} catch (Exception e) {
 							e.printStackTrace();
 						} finally{
@@ -146,20 +162,22 @@ public class MovieRetriever{
 							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
 
 							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
+							String moviesAsJson = "";
+							if(movies!=null){
+								for (SimpleMovieInfo item : movies) {
+									System.out.println("Title");
+									System.out.println(item.getTitle());
+								}
 
-							for (SimpleMovieInfo item : movies) {
-								System.out.println("Title");
-								System.out.println(item.getTitle());
+								final ObjectMapper mapper = new ObjectMapper();
+								moviesAsJson = mapper.writeValueAsString(movies);
+								System.out.println(moviesAsJson);								
+							}else {
+									System.out.println("The parser didn't retrieve any brief movie information");									
 							}
-
-							final ObjectMapper mapper = new ObjectMapper();
-							String moviesAsJson = mapper.writeValueAsString(movies);
-
-							System.out.println(moviesAsJson);
-
+							
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								
 								broadcaster.broadcast(moviesAsJson);
 							}
 						} catch (Exception e) {
@@ -197,9 +215,23 @@ public class MovieRetriever{
 							String responseAsString = EntityUtils.toString(result.getEntity());						
 							System.out.println(responseAsString);
 
+							SourceParserImpl parser = new SourceParserImpl();
+							String uriRequested = uri.getURI().getHost();
+							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
+
+							MovieInfo movieInfo = (MovieInfo) parser.getMovieDetails(responseAsString, uriRequested, htmlNodePathMapper);
+							String movieAsJson = "";
+							if(movieInfo!=null){
+								final ObjectMapper mapper = new ObjectMapper();
+								movieAsJson = mapper.writeValueAsString(movieInfo);
+								System.out.println(movieAsJson);								
+							}else {
+									System.out.println("The parser didn't retrieve any detailed movie information");									
+							}
+							
 							if (atmosphereResource != null) {
-								Broadcaster broadcaster = atmosphereResource.getBroadcaster();						
-								broadcaster.broadcast(responseAsString);
+								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
+								broadcaster.broadcast(movieAsJson);
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -219,19 +251,22 @@ public class MovieRetriever{
 
 							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
 
-							for (SimpleMovieInfo item : movies) {
-								System.out.println("Title");
-								System.out.println(item.getTitle());
+							String moviesAsJson = "";
+							if(movies!=null){
+								for (SimpleMovieInfo item : movies) {
+									System.out.println("Title");
+									System.out.println(item.getTitle());
+								}
+
+								final ObjectMapper mapper = new ObjectMapper();
+								moviesAsJson = mapper.writeValueAsString(movies);
+								System.out.println(moviesAsJson);								
+							}else {
+									System.out.println("The parser didn't retrieve any movie information");									
 							}
-
-							final ObjectMapper mapper = new ObjectMapper();
-							String moviesAsJson = mapper.writeValueAsString(movies);
-
-							System.out.println(moviesAsJson);
 
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								
 								broadcaster.broadcast(moviesAsJson);
 							}
 						} catch (Exception e) {
