@@ -97,15 +97,15 @@ public class MovieRetriever{
 					}
 					httpPost.setHeader("User-Agent", infoSourceModel.getPresetHeaders().get("User-Agent"));
 					HttpContext httpContext  = retrieveContext(infoSourceModel);					
-					executeRequest(atmosphereResource, httpPost, htmlNodePathMapper, detailedMovieData, httpContext);
+					executeRequest(atmosphereResource, httpPost, htmlNodePathMapper, detailedMovieData, httpContext, searchTerm);
 				}
 			}else{// the search method is "get", so we don't need a HttpContext
-					executeRequest(atmosphereResource, uri, htmlNodePathMapper, detailedMovieData, null);
+					executeRequest(atmosphereResource, uri, htmlNodePathMapper, detailedMovieData, null, searchTerm);
 			}	
 						
 	};
 		
-	private void executeRequest(final AtmosphereResource atmosphereResource, final HttpUriRequest uri, final HtmlNodePathMapper htmlNodePathMapper, final boolean detailedMovieData, HttpContext httpContext) throws InterruptedException, IOReactorException{
+	private void executeRequest(final AtmosphereResource atmosphereResource, final HttpUriRequest uri, final HtmlNodePathMapper htmlNodePathMapper, final boolean detailedMovieData, HttpContext httpContext, final String searchTerm) throws InterruptedException, IOReactorException{
 		final HttpAsyncClient httpClient = new DefaultHttpAsyncClient();
 		initParams(httpClient);		
 		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
@@ -161,7 +161,7 @@ public class MovieRetriever{
 							String uriRequested = uri.getURI().getHost();
 							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
 
-							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
+							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper, searchTerm);
 							String moviesAsJson = "";
 							if(movies!=null){
 								for (SimpleMovieInfo item : movies) {
@@ -249,7 +249,7 @@ public class MovieRetriever{
 							String uriRequested = uri.getURI().getHost();
 							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
 
-							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper);
+							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper, searchTerm);
 
 							String moviesAsJson = "";
 							if(movies!=null){

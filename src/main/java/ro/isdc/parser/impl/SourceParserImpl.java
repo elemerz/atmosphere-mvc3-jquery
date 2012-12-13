@@ -45,7 +45,7 @@ public class SourceParserImpl implements SourceParser {
 	 * Method that retrieves the simple movie list from the html string
 	 */
 	@Override
-	public List<SimpleMovieInfo> getMoviesByTitle(String htmlContent, String websiteId, HtmlNodePathMapper htmlNodePathMapper) { 
+	public List<SimpleMovieInfo> getMoviesByTitle(String htmlContent, String websiteId, HtmlNodePathMapper htmlNodePathMapper, String searchTerm) { 
 			
 			ElementLocalizerType elementLocalizerType = getElementLocalizerType(htmlNodePathMapper);
 			
@@ -54,11 +54,11 @@ public class SourceParserImpl implements SourceParser {
 			
 			switch (elementLocalizerType) {
 			case XPATH :
-				results = (new XPathLocalizer()).getMoviesByTitle(htmlContent, websiteId, htmlNodePathMapper);
+				results = (new XPathLocalizer()).getMoviesByTitle(htmlContent, websiteId, htmlNodePathMapper, searchTerm);
 				break;
 
 			case CSS3PATH :
-				results = (new CSS3PathLocalizer()).getMoviesByTitle(htmlContent, websiteId, htmlNodePathMapper);
+				results = (new CSS3PathLocalizer()).getMoviesByTitle(htmlContent, websiteId, htmlNodePathMapper, searchTerm);
 				break;
 				
 			default:

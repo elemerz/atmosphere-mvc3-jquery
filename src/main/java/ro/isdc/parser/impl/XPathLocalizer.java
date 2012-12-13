@@ -1,10 +1,10 @@
 package ro.isdc.parser.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
@@ -34,9 +34,9 @@ public class XPathLocalizer  implements ElementLocalizer {
 	 * 
 	 */
 	@Override
-	public List<SimpleMovieInfo> getMoviesByTitle(String htmlContent, String websiteId, HtmlNodePathMapper htmlNodePathMapper) {
+	public List<SimpleMovieInfo> getMoviesByTitle(String htmlContent, String websiteId, HtmlNodePathMapper htmlNodePathMapper, String searchTerm) {
 		
-		Map<String, SimpleMovieInfo> movieResultsMap = new HashMap<String, SimpleMovieInfo>();
+		Map<String, SimpleMovieInfo> movieResultsMap = new TreeMap<String, SimpleMovieInfo>();
 		
 	    try {
 	    	String listXpath = htmlNodePathMapper.getNodePathMap().get(websiteId + ".list");
@@ -54,7 +54,8 @@ public class XPathLocalizer  implements ElementLocalizer {
 					movieItem.setDirector(director);
 					movieItem.setId(id);
 					movieItem.setSite(websiteId);
-					movieResultsMap.put(title+year, movieItem);
+					if(title.toLowerCase().contains(searchTerm.toLowerCase()))  
+						movieResultsMap.put(title+year, movieItem);					
 				}
 			}
 		} catch (Exception e) {
@@ -63,7 +64,7 @@ public class XPathLocalizer  implements ElementLocalizer {
 	    
 	    Iterator<String> it = movieResultsMap.keySet().iterator();
 	    int counter = 0;
-		while(it.hasNext() && counter < 9) {
+		while(it.hasNext() && counter < 19) {
 			moviesResults.add(movieResultsMap.get(it.next()));
 			counter++;
 		}

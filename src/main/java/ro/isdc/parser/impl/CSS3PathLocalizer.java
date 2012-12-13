@@ -10,7 +10,7 @@ public class CSS3PathLocalizer implements ElementLocalizer{
 
 	@Override
 	public List<SimpleMovieInfo> getMoviesByTitle(String htmlContent,
-			String websiteId, HtmlNodePathMapper htmlNodePathMapper) {
+			String websiteId, HtmlNodePathMapper htmlNodePathMapper, String searchTerm) {
 		// TODO Auto-generated method stub
 		return null;
 	}
