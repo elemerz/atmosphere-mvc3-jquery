@@ -66,7 +66,7 @@
 			var that=this;				
 			this.request = new $.atmosphere.AtmosphereRequest();
 			$.extend(this.request,{
-				url:that.$ctx.data('search-url'),
+				url:that.$ctx.data('search-url'),				
 				contentType:"application/json",
 				transport:transport,
 				fallbackTransport:"long-polling",
@@ -291,8 +291,7 @@
 			$.atmosphere.log('info', [detailedMovieData]);
 				
 			this.subSocket.response.request.method='POST';
-			//this.subSocket.response.request.url=this.$ctx.data('detailedSearch-url');
-			this.subSocket.response.request.url='/atmosphere-mvc3-jquery/searchDetailedData/';		
+			this.subSocket.response.request.url=this.$msg.data('detailedsearchUrl');
         	this.subSocket.push(JSON.stringify(detailedMovieData));		    
 		}
 				

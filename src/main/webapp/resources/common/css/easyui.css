@@ -1539,17 +1539,17 @@ a.s-btn-plain-active .s-btn-downarrow{
 }
 .tree-folder{
 	display:inline-block;
-	background:url('images/tree_folder.gif') no-repeat;
+	background:url('images/reel_16x16.png') no-repeat;
 	width:16px;
 	height:18px;
 	vertical-align:middle;
 }
 .tree-folder-open{
-	background:url('images/tree_folder_open.gif') no-repeat;
+	background:url('images/reel_16x16.png') no-repeat;
 }
 .tree-file{
 	display:inline-block;
-	background:url('images/tree_file.gif') no-repeat;
+	background:url('images/movie_16x16.png') no-repeat;
 	width:16px;
 	height:18px;
 	vertical-align:middle;
