@@ -97,11 +97,24 @@
 			site = null,
 			that=this,
 			treeTitlesArray = [],
-			panelContent = "";			
+			panelContent = "",
+			$el = null;			
 			
-			$.atmosphere.log('info', ['onMessageReceived']);			
+			$.atmosphere.log('info', ['onMessageReceived']);	
 
-			if(response.state === "messageReceived"){	            	
+			if(response.state === "messageReceived"){
+				
+				$el = $('#accordion').accordion('getPanel',movieTitle);
+				$el.siblings('.panel-header').find('.panel-icon').removeClass('icon-loading').addClass('icon-cancel');
+				
+				$('.icon-cancel').on('click', function(e){					
+					var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
+					if(p){
+						 index = $('#accordion').accordion('getPanelIndex', p);
+						 $('#accordion').accordion('remove',index);
+					}
+				});			
+				
 	        	if((response.responseBody!=="")&&(response.responseBody!=="[]")){	        		        	
 	        		
 	        		MovieData = $.parseJSON(decodeURIComponent(response.responseBody));	 
@@ -158,7 +171,8 @@
 									"runtime" : MovieData.runtime
 								})),
 		        				closable: true,
-		        				selected: true
+		        				selected: true,
+		        				iconCls:'icon-movie'
 		        				});	
 	        			}	        			   	        				        				        			
 	        		}       			        			        				        					        											
@@ -178,6 +192,7 @@
 		/**On Channel Error*/
 		onError: function(){
 			$.atmosphere.log('info', ['onError']);
+
 		},
 		/**On Channel Reconnected*/
 		onReconnect: function(){
@@ -236,6 +251,7 @@
 				return false;
 			}			
 			
+			
 			//add a new panel only if it doesn't exist already
 			if(!$('#accordion').accordion('getPanel',movieTitle)){							
 				$('#accordion').accordion('add', {
@@ -244,16 +260,8 @@
 								"searchTerm" : movieTitle
 							})),
 					selected: true,
-					iconCls: 'icon-cancel'
-				});
-				
-				$('.icon-cancel').on('click', function(e){					
-					var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
-					if(p){
-						 index = $('#accordion').accordion('getPanelIndex', p);
-						 $('#accordion').accordion('remove',index);
-					}
-				});			
+					iconCls: 'icon-loading'
+				});												
 				
 			}else{
 				//open the existing panel
@@ -266,7 +274,7 @@
 			
 			this.subSocket.response.request.method='POST';
 			this.subSocket.response.request.url=this.$ctx.data('search-url');
-        	this.subSocket.push(JSON.stringify(movieData));		    
+        	this.subSocket.push(JSON.stringify(movieData));		
 		},
 		
 		/**Process request on Enter keypress*/
@@ -299,7 +307,7 @@
 				
 			this.subSocket.response.request.method='POST';
 			this.subSocket.response.request.url=this.$msg.data('detailedsearchUrl');
-        	this.subSocket.push(JSON.stringify(detailedMovieData));		    
+        	this.subSocket.push(JSON.stringify(detailedMovieData));	
 		}
 				
 	});

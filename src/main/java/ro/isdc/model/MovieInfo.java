@@ -10,7 +10,14 @@ public class MovieInfo {
 	private String cast;
 	private String genre;
 	private String runtime;	
+	private String site;
 	
+	public String getSite() {
+		return site;
+	}
+	public void setSite(String site) {
+		this.site = site;
+	}
 	public String getRate() {
 		return rate;
 	}

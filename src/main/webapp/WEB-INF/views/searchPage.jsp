@@ -67,11 +67,12 @@
 <textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id} data-site={site}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
 <textarea id="detailedMovieItemTmpl" class="ui-helper-hidden">
 			<ul>
-				<li><span><spring:message code="searchPage.movie.description"/></span><ul><li>{description}</li></ul></li>
-				<li><span><spring:message code="searchPage.movie.cast"/></span><ul><li>{cast}</li></ul></li>
-				<li><span><spring:message code="searchPage.movie.genre"/></span><ul><li>{genre}</li></ul></li>
-				<li><span><spring:message code="searchPage.movie.rate"/></span><ul><li>{rate}</li></ul></li>
-				<li><span><spring:message code="searchPage.movie.runtime"/></span><ul><li>{runtime}</li></ul></li>				
+				<li class="centered"><span class="bold"><spring:message code="searchPage.movie.site"/>:&nbsp;</span><span>{site}</span></li>			
+				<li><span class="bold"><spring:message code="searchPage.movie.description"/></span><ul><li>{description}</li></ul></li>
+				<li><span class="bold"><spring:message code="searchPage.movie.cast"/></span><ul><li>{cast}</li></ul></li>
+				<li><span class="bold"><spring:message code="searchPage.movie.genre"/></span><ul><li>{genre}</li></ul></li>
+				<li><span class="bold"><spring:message code="searchPage.movie.rate"/></span><ul><li>{rate}</li></ul></li>
+				<li><span class="bold"><spring:message code="searchPage.movie.runtime"/></span><ul><li>{runtime}</li></ul></li>				
 			</ul>
 </textarea>
 <%--Messages Component--%>

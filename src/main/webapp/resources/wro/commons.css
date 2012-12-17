@@ -1862,6 +1862,10 @@ a.s-btn-plain-active .s-btn-downarrow{
 .icon-loading{
 	background:url('../resources/common/css/images/panel_loading.gif') no-repeat;
 }
+.icon-movie{
+	background:url('../resources/common/css/images/movie_16x16.png') no-repeat;
+}
+
 
 .icon-mini-add{
 	background:url('../resources/common/css/icons/mini_add.png') no-repeat 2px 2px;

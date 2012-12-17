@@ -83,7 +83,7 @@ public class XPathLocalizer  implements ElementLocalizer {
 	    	
 			String rate = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".rate"));
 			String description = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".description"));
-			String cast = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".cast"));
+			String cast = getXpathElements(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".cast"));
 			String genre = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".genre"));
 			String runtime = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".runtime"));
 
@@ -92,6 +92,7 @@ public class XPathLocalizer  implements ElementLocalizer {
 			movieItem.setCast(cast==null ? "Not available" : cast);
 			movieItem.setGenre(genre==null ? "Not available" : genre);
 			movieItem.setRuntime(runtime==null ? "Not available" : runtime);
+			movieItem.setSite(websiteId);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -144,5 +145,34 @@ public class XPathLocalizer  implements ElementLocalizer {
 			return xpathItemNode != null ? xpathItemNode.getText().toString() : xpathItemString;
 		}
 		return null;
-	}	
+	}
+	
+	/**
+	 * @param movieItem
+	 * @param movieXpath
+	 * @return
+	 * @throws XPatherException
+	 */
+	public String getXpathElements(TagNode movieItem, String movieXpath) throws XPatherException {
+		
+		Object[] listOfItems = movieItem.evaluateXPath(movieXpath);
+		TagNode xpathItemNode = null;
+		String xpathItemString = "";
+		
+		if (listOfItems.length > 0) {
+			for(int i=0;i<listOfItems.length;i++){
+				try {
+					xpathItemNode = (TagNode) listOfItems[i];
+					xpathItemString += xpathItemNode.getText().toString() + ((i==(listOfItems.length-1)) ? "" : ", ");					
+				} catch(Exception e) {
+					xpathItemString += listOfItems[i].toString() + ((i==(listOfItems.length-1)) ? "" : ", ");
+				}			
+			}
+			
+			return xpathItemString;
+		}
+		return null;
+	}
+	
+	
 }
