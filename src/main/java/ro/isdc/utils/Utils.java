@@ -33,6 +33,7 @@ import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.MovieInfoPostData;
 import ro.isdc.model.MovieInfoSource;
 import ro.isdc.model.SearchInputModel;
+import ro.isdc.utils.EncodingUtil;
 
 
 public class Utils {
@@ -42,7 +43,7 @@ public class Utils {
 	public static HttpUriRequest getRequestForBriefMovieData(InfoSourceModel infoSource, String movieName) {
 		
 		HttpUriRequest request = null;
-		
+		movieName = EncodingUtil.encodeURIComponent(movieName);
 		if (infoSource.getSearchMethods().get("briefSearchMethod").equalsIgnoreCase("get")) {
 			request = new HttpGet(infoSource.getSearchURLs().get("briefSearchURL").replace("{title}", movieName));
 			

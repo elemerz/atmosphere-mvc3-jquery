@@ -1627,17 +1627,17 @@ a.s-btn-plain-active .s-btn-downarrow{
 }
 .tree-folder{
 	display:inline-block;
-	background:url('../resources/common/css/images/tree_folder.gif') no-repeat;
+	background:url('../resources/common/css/images/reel_16x16.png') no-repeat;
 	width:16px;
 	height:18px;
 	vertical-align:middle;
 }
 .tree-folder-open{
-	background:url('../resources/common/css/images/tree_folder_open.gif') no-repeat;
+	background:url('../resources/common/css/images/reel_16x16.png') no-repeat;
 }
 .tree-file{
 	display:inline-block;
-	background:url('../resources/common/css/images/tree_file.gif') no-repeat;
+	background:url('../resources/common/css/images/movie_16x16.png') no-repeat;
 	width:16px;
 	height:18px;
 	vertical-align:middle;
@@ -1858,6 +1858,9 @@ a.s-btn-plain-active .s-btn-downarrow{
 }
 .icon-tip{
 	background:url('../resources/common/css/icons/tip.png') no-repeat;
+}
+.icon-loading{
+	background:url('../resources/common/css/images/panel_loading.gif') no-repeat;
 }
 
 .icon-mini-add{

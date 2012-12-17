@@ -15,7 +15,7 @@
 		<atmosphere.version>0.9.5</atmosphere.version>
 		<wro4j.version>1.6.0</wro4j.version>		
 	</properties>
-	<dependencies>
+	<dependencies>		
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>

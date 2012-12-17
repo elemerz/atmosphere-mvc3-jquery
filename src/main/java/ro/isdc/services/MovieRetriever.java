@@ -3,7 +3,6 @@ package ro.isdc.services;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +25,8 @@ import org.apache.http.impl.nio.client.DefaultHttpAsyncClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.nio.reactor.IOReactorException;
-import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.CoreProtocolPNames;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
@@ -41,12 +38,10 @@ import org.springframework.stereotype.Component;
 import ro.isdc.model.HtmlNodePathMapper;
 import ro.isdc.model.InfoSourceModel;
 import ro.isdc.model.MovieInfo;
-import ro.isdc.model.MovieInfoPostData;
-import ro.isdc.model.PostData;
 import ro.isdc.model.SimpleMovieInfo;
-import ro.isdc.parser.SourceParser;
 import ro.isdc.parser.impl.SourceParserImpl;
 import ro.isdc.utils.Utils;
+import ro.isdc.utils.EncodingUtil;
 
 @Component("movieRetriever")
 public class MovieRetriever{
@@ -141,7 +136,7 @@ public class MovieRetriever{
 							
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								broadcaster.broadcast(movieAsJson);
+								broadcaster.broadcast(EncodingUtil.encodeURIComponent(movieAsJson));
 							}
 
 						} catch (Exception e) {
@@ -178,7 +173,7 @@ public class MovieRetriever{
 							
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								broadcaster.broadcast(moviesAsJson);
+								broadcaster.broadcast(EncodingUtil.encodeURIComponent(moviesAsJson));
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -231,7 +226,7 @@ public class MovieRetriever{
 							
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								broadcaster.broadcast(movieAsJson);
+								broadcaster.broadcast(EncodingUtil.encodeURIComponent(movieAsJson));
 							}
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -267,7 +262,7 @@ public class MovieRetriever{
 
 							if (atmosphereResource != null) {
 								Broadcaster broadcaster = atmosphereResource.getBroadcaster();
-								broadcaster.broadcast(moviesAsJson);
+								broadcaster.broadcast(EncodingUtil.encodeURIComponent(moviesAsJson));
 							}
 						} catch (Exception e) {
 							e.printStackTrace();

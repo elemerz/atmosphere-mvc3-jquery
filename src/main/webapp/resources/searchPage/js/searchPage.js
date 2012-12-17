@@ -12,6 +12,7 @@
 		request: null,
 		socket: $.atmosphere,
 		subSocket: null,
+		selectedMovieTitle : "",
 		/*Test socket*/
 		requestTest: null,
 		socketTest: $.atmosphere,
@@ -101,9 +102,9 @@
 			$.atmosphere.log('info', ['onMessageReceived']);			
 
 			if(response.state === "messageReceived"){	            	
-	        	if(response.responseBody!==""){	        		        	
+	        	if((response.responseBody!=="")&&(response.responseBody!=="[]")){	        		        	
 	        		
-	        		MovieData = $.parseJSON(response.responseBody);	 
+	        		MovieData = $.parseJSON(decodeURIComponent(response.responseBody));	 
 	        		//we need the site value from the response in order to know where to place the information
 	        		if($.isArray(MovieData)){	        			
 	        			panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body');
@@ -135,7 +136,9 @@
 		        		$('.movie-id').on('click',$.proxy(this.getDetailedData,this));
 		        		
 	        		}else{//we received the detailed movie info
-	        			if($('#tabs').tabs('exists',movieTitle)){	        				  
+	        			//overwrite the movieTitle with the name of the selected accordion panel
+	        			movieTitle = this.selectedMovieTitle;
+	        			if($('#tabs').tabs('exists', movieTitle)){	        				  
 	        				$('#tabs').tabs('getTab',movieTitle).html($(detailedMovieItemTmpl.tmpl({
 	 							"description" : MovieData.description,
 								"cast" : MovieData.cast,
@@ -143,6 +146,7 @@
 								"rate" :MovieData.rate,
 								"runtime" : MovieData.runtime
 							})));
+	        				$('#tabs').tabs('select',movieTitle);
 	        			}else{
 	        				$('#tabs').tabs('add',{  
 		        				 title: movieTitle,
@@ -153,13 +157,15 @@
 									"rate" :MovieData.rate,
 									"runtime" : MovieData.runtime
 								})),
-		        				closable: true
+		        				closable: true,
+		        				selected: true
 		        				});	
 	        			}	        			   	        				        				        			
 	        		}       			        			        				        					        											
 	        			        		
 	        	}else{ //the response is empty
 	        		$.atmosphere.log('info', ["empty response"]);
+	        		$('#accordion').accordion('getPanel',movieTitle).append(this.$msg.data('searchpage.movie.not.found'));
 	            }
 		    }// end if(response.state==="messageReceived")	    
 		},
@@ -196,7 +202,7 @@
 			}).get();
 			// put the search term into the movieData object
 			if($('.movie-title').val()!==""){
-				movieData.searchTerms.push(encodeURIComponent($('.movie-title').val()));	
+				movieData.searchTerms.push($('.movie-title').val());	
 			}		
 			
 			$.atmosphere.log('info', [movieData]);
@@ -273,7 +279,6 @@
 		/**Sends a request to server with a movie id to get detailed data about that movie*/
 		getDetailedData: function(e){
 			var that= this,						
-			movieTitle = $('.movie-title',this.$ctx).val(), 
 			contentArea = $('.search-results',this.$ctx), 
 			searchItemTmpl = $('#searchItemTmpl').val(),						
 			detailedMovieData = {
@@ -281,6 +286,8 @@
 				"infoSourceKeys" : []
 			},
 			$el = e.target;
+			
+			this.selectedMovieTitle = $($el).closest('ul').siblings('div').children('.tree-title').html();
 			
 			if($('#tabs').hasClass('display-none')){
  			   $('#tabs').removeClass('display-none');	

@@ -31,7 +31,7 @@
                 <div data-options="region:'north' ,split:true,border:false" style="height:65px">
                 	<header class="user-input-zone">
 					 	<button class="search-button user-input add"><spring:message code="searchPage.button.add"/></button>               	
-					 	<input  class="user-input movie-title" placeholder="<spring:message code="searchPage.movie.title.placeholder"/>" />
+					 	<input class="user-input movie-title" placeholder="<spring:message code="searchPage.movie.title.placeholder"/>" />
 					 </header>                
                 </div>  
                 <div data-options="region:'west', title:'<spring:message code="searchPage.movie.briefdata"/>',split:true,border:false" style="width:500px">
@@ -81,4 +81,5 @@ data-detailedSearch-url='${pageContext.request.contextPath}/searchDetailedData/'
 data-searchPage.no.infosource.selected='<spring:message code="searchPage.no.infosource.selected"/>'
 data-searchpage.movie.required='<spring:message code="searchPage.movie.required"/>'
 data-searchPage.server.error='<spring:message code="searchPage.server.error"/>'
+data-searchPage.movie.not.found='<spring:message code="searchPage.movie.not.found"/>'
 >

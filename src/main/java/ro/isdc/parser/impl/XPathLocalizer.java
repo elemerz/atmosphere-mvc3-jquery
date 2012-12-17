@@ -50,12 +50,11 @@ public class XPathLocalizer  implements ElementLocalizer {
 
 				if(title != null) {
 					movieItem.setTitle(title);
-					movieItem.setYear(year);
-					movieItem.setDirector(director);
+					movieItem.setYear(year==null ? "Not available" : year);
+				    movieItem.setDirector(director==null ? "Not available" : director);
 					movieItem.setId(id);
 					movieItem.setSite(websiteId);
-					if(title.toLowerCase().contains(searchTerm.toLowerCase()))  
-						movieResultsMap.put(title+year, movieItem);					
+					movieResultsMap.put(title+year, movieItem);					
 				}
 			}
 		} catch (Exception e) {
@@ -88,11 +87,11 @@ public class XPathLocalizer  implements ElementLocalizer {
 			String genre = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".genre"));
 			String runtime = getXpathElement(listItem, htmlNodePathMapper.getNodePathMap().get(websiteId + ".runtime"));
 
-			movieItem.setRate(rate);
-			movieItem.setDescription(description);
-			movieItem.setCast(cast);
-			movieItem.setGenre(genre);
-			movieItem.setRuntime(runtime);		
+			movieItem.setRate(rate==null ? "Not available" : rate);
+			movieItem.setDescription(description==null ? "Not available" : description);
+			movieItem.setCast(cast==null ? "Not available" : cast);
+			movieItem.setGenre(genre==null ? "Not available" : genre);
+			movieItem.setRuntime(runtime==null ? "Not available" : runtime);
 		
 		} catch (Exception e) {
 			e.printStackTrace();
