@@ -150,7 +150,7 @@ public class MovieRetriever{
 						}
 					}else{
 						try {
-							String responseAsString = EntityUtils.toString(result.getEntity());
+							String responseAsString = EntityUtils.toString(result.getEntity());							
 							SourceParserImpl parser = new SourceParserImpl();
 							String uriRequested = uri.getURI().getHost();
 							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();
@@ -207,7 +207,7 @@ public class MovieRetriever{
 					if(detailedMovieData){
 						try {
 							String responseAsString = EntityUtils.toString(result.getEntity());						
-
+							//System.out.println(responseAsString);
 							SourceParserImpl parser = new SourceParserImpl();
 							String uriRequested = uri.getURI().getHost();
 							uriRequested = uriRequested.subSequence(uriRequested.indexOf('.') + 1, uriRequested.lastIndexOf('.')).toString();

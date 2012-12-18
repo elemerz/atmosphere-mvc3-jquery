@@ -74,7 +74,6 @@ public class SourceParserImpl implements SourceParser {
 		
 		MovieInfo result = new MovieInfo();
 		htmlContent = removeScripts(htmlContent);
-		
 		switch (elementLocalizerType) {
 		case XPATH :
 			result = (new XPathLocalizer()).getMovieDetails(htmlContent, websiteId, websitesXPATHMapper);
