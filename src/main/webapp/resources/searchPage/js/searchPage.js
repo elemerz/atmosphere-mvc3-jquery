@@ -151,6 +151,7 @@
 	        			movieTitle = this.selectedMovieTitle;
 	        			if($('#tabs').tabs('exists', movieTitle)){	        				  
 	        				$('#tabs').tabs('getTab',movieTitle).html($(detailedMovieItemTmpl.tmpl({
+	        					"site" : MovieData.site.toUpperCase(),	        					
 	 							"description" : MovieData.description,
 								"cast" : MovieData.cast,
 								"genre" : MovieData.genre,
