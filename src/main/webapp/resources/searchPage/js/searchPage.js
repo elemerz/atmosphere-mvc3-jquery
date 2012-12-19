@@ -91,6 +91,7 @@
         	searchItemTmpl = $('#searchItemTmpl').val(),		        
 			movieDataSourceTmpl = $('#movieDataSourceTmpl').val(),
 			movieItemTmpl = $('#movieItemTmpl').val(),
+			noMovieFoundTmpl = $('#noMovieFoundTmpl').val(),
 			detailedMovieItemTmpl = $('#detailedMovieItemTmpl').val(),
 			movieTitle = $('.movie-title',this.$ctx).val(), 
 			MovieData = null,
@@ -98,34 +99,44 @@
 			that=this,
 			treeTitlesArray = [],
 			panelContent = "",
-			$el = null;			
+			$el = null,
+			decodedResponse  = null;			
 			
 			$.atmosphere.log('info', ['onMessageReceived']);	
 
 			if(response.state === "messageReceived"){
-				
-				$el = $('#accordion').accordion('getPanel',movieTitle);
-				$el.siblings('.panel-header').find('.panel-icon').removeClass('icon-loading').addClass('icon-cancel');
-				
-				$('.icon-cancel').on('click', function(e){					
-					var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
-					if(p){
-						 index = $('#accordion').accordion('getPanelIndex', p);
-						 $('#accordion').accordion('remove',index);
-					}
-				});			
-				
-	        	if((response.responseBody!=="")&&(response.responseBody!=="[]")){	        		        	
+					
+        		MovieData = $.parseJSON(decodeURIComponent(response.responseBody));	 
+				$.atmosphere.log('info', [MovieData]);
 	        		
-	        		MovieData = $.parseJSON(decodeURIComponent(response.responseBody));	 
-	        		//we need the site value from the response in order to know where to place the information
-	        		if($.isArray(MovieData)){	        			
-	        			panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body');
-	        			$('.tree-title', panelContent).each(function(index){
-	        				treeTitlesArray.push($(this).html());
-	        			});						
-						//only add content if it doesn't exist in the treeTitlesArray
-						if($.inArray(MovieData[0].site,treeTitlesArray)===-1){
+	        	if($.isArray(MovieData)){	
+	        		
+	        		$el = $('#accordion').accordion('getPanel',movieTitle);
+					$el.siblings('.panel-header').find('.panel-icon').removeClass('icon-loading').addClass('icon-cancel');
+					
+					$('.icon-cancel').on('click', function(e){					
+						var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
+						if(p){
+							 index = $('#accordion').accordion('getPanelIndex', p);
+							 $('#accordion').accordion('remove',index);
+						}
+					});		
+        			panelContent = $('#accordion').accordion('getPanel',movieTitle).panel('body');
+        			$('.tree-title', panelContent).each(function(index){
+        				treeTitlesArray.push($(this).html());
+        			});						
+					//only add content if it doesn't exist in the treeTitlesArray
+					if(($.inArray(MovieData[0].site,treeTitlesArray)===-1)){
+						
+						if(MovieData[0].title===undefined){
+							site = MovieData[0].site;
+							$(movieDataSourceTmpl.tmpl({
+								"site" : site					
+							})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
+							$(noMovieFoundTmpl.tmpl({
+								"noMovieFound" : this.$msg.data('searchpage.movie.not.found')							
+							})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));
+						}else{
 							$(movieDataSourceTmpl.tmpl({
 								"site" : MovieData[0].site						
 							})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
@@ -139,48 +150,72 @@
 									"id" : value.id,
 									"site" : value.site
 								})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));				        						    				        		
-			        		});
-				        	//generate a tree from the content of the accordion
-				        	$('#accordion').accordion('getPanel',movieTitle).find('.'+site).closest('.easyui-tree').tree({animate:true});
-						}
+			        		});	
+						}						
+			        	//generate a tree from the content of the accordion
+			        	$('#accordion').accordion('getPanel',movieTitle).find('.'+site).closest('.easyui-tree').tree({animate:true});
+			        	
 						//bind the getDetailedData() function to the elements which have the class "movie-id"
-		        		$('.movie-id').on('click',$.proxy(this.getDetailedData,this));
-		        		
-	        		}else{//we received the detailed movie info
-	        			//overwrite the movieTitle with the name of the selected accordion panel
-	        			movieTitle = this.selectedMovieTitle;
-	        			if($('#tabs').tabs('exists', movieTitle)){	        				  
-	        				$('#tabs').tabs('getTab',movieTitle).html($(detailedMovieItemTmpl.tmpl({
-	        					"site" : MovieData.site.toUpperCase(),	        					
+		        		$('.movie-id',this.$ctx).on('click',$.proxy(this.getDetailedData,this));
+					}        		
+        		}else{/* we received the detailed movie info, we need to
+        			   * overwrite the value of movieTitle variable 
+        			   * with the name of the selected movie title from the tree*/
+        			if(this.selectedMovieTitle!==""){
+            			movieTitle = this.selectedMovieTitle;
+        			}else{
+        				movieTitle = $('.movie-title',this.$ctx).val();
+        				if($('#tabs').hasClass('display-none')){
+        		 			$('#tabs').removeClass('display-none');	
+        		 		}
+        				site = MovieData.site;
+						$(movieDataSourceTmpl.tmpl({
+							"site" : site					
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle));	
+						$(noMovieFoundTmpl.tmpl({
+							"noMovieFound" : this.$msg.data('searchpage.one.result.found')							
+						})).appendTo($('#accordion').accordion('getPanel',movieTitle).find('.'+site));
+						
+						$el = $('#accordion').accordion('getPanel',movieTitle);
+			        	$el.find('.'+site).closest('.easyui-tree').tree({animate:true});
+						$el.siblings('.panel-header').find('.panel-icon').removeClass('icon-loading').addClass('icon-cancel');
+						
+						$('.icon-cancel').on('click', function(e){					
+							var p = $('#accordion').accordion('getPanel',$(this).prev().html()), index = null;
+							if(p){
+								 index = $('#accordion').accordion('getPanelIndex', p);
+								 $('#accordion').accordion('remove',index);
+							}
+						});		
+        			}
+        			if($('#tabs').tabs('exists', movieTitle)){	        				  
+        				$('#tabs').tabs('getTab',movieTitle).html($(detailedMovieItemTmpl.tmpl({
+        					"site" : MovieData.site.toUpperCase(),
+ 							"description" : MovieData.description,
+							"cast" : MovieData.cast,
+							"genre" : MovieData.genre,
+							"rate" :MovieData.rate,
+							"runtime" : MovieData.runtime
+						})));
+        				$('#tabs').tabs('select',movieTitle);
+        			}else{
+        				$('#tabs').tabs('add',{  
+	        				 title: movieTitle,
+	        				 content: $(detailedMovieItemTmpl.tmpl({
+	        					"site" : MovieData.site.toUpperCase(),
 	 							"description" : MovieData.description,
 								"cast" : MovieData.cast,
 								"genre" : MovieData.genre,
 								"rate" :MovieData.rate,
 								"runtime" : MovieData.runtime
-							})));
-	        				$('#tabs').tabs('select',movieTitle);
-	        			}else{
-	        				$('#tabs').tabs('add',{  
-		        				 title: movieTitle,
-		        				 content: $(detailedMovieItemTmpl.tmpl({
-		        					"site" : MovieData.site.toUpperCase(),
-		 							"description" : MovieData.description,
-									"cast" : MovieData.cast,
-									"genre" : MovieData.genre,
-									"rate" :MovieData.rate,
-									"runtime" : MovieData.runtime
-								})),
-		        				closable: true,
-		        				selected: true,
-		        				iconCls:'icon-movie'
-		        				});	
-	        			}	        			   	        				        				        			
-	        		}       			        			        				        					        											
-	        			        		
-	        	}else{ //the response is empty
-	        		$.atmosphere.log('info', ["empty response"]);
-	        		$('#accordion').accordion('getPanel',movieTitle).append(this.$msg.data('searchpage.movie.not.found'));
-	            }
+							})),
+	        				closable: true,
+	        				selected: true,
+	        				iconCls:'icon-movie'
+	        				});	
+        			}	        			   	        				        				        			
+        		}
+	        	
 		    }// end if(response.state==="messageReceived")	    
 		},
 		

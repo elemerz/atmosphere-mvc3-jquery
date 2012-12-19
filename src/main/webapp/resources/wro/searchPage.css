@@ -9,6 +9,12 @@
 .bold{
 	font-weight: bold;
 }
+.centered {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	font: 2em/100% 'SegoeUI-Light',sans-serif;	
+}
 .ui-layout-pane {
 	background:#666;
 }

@@ -65,6 +65,7 @@
 <textarea id="searchItemTmpl" class="ui-helper-hidden"><div id={searchTerm} title={searchTerm}></div></textarea>
 <textarea id="movieDataSourceTmpl" class="ui-helper-hidden"><ul class="easyui-tree"><li><span>{site}</span><ul class={site}></ul></li></ul></textarea>
 <textarea id="movieItemTmpl" class="ui-helper-hidden"><li><span>{title}</span><ul><li>{year}</li><li>{director}</li><li><a class="movie-id" href="#" id={id} title={id} data-site={site}><spring:message code="searchPage.movie.detaileddata"/></a></li></ul></li></textarea>
+<textarea id="noMovieFoundTmpl" class="ui-helper-hidden"><li><span>{noMovieFound}</span></li></textarea>
 <textarea id="detailedMovieItemTmpl" class="ui-helper-hidden">
 			<ul>
 				<li class="centered"><span class="bold"><spring:message code="searchPage.movie.site"/>:&nbsp;</span><span>{site}</span></li>			
@@ -83,4 +84,5 @@ data-searchPage.no.infosource.selected='<spring:message code="searchPage.no.info
 data-searchpage.movie.required='<spring:message code="searchPage.movie.required"/>'
 data-searchPage.server.error='<spring:message code="searchPage.server.error"/>'
 data-searchPage.movie.not.found='<spring:message code="searchPage.movie.not.found"/>'
+data-searchPage.one.result.found='<spring:message code="searchPage.one.result.found"/>'
 >

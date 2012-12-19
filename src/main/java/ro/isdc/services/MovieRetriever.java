@@ -33,6 +33,8 @@ import org.apache.http.util.EntityUtils;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.springframework.stereotype.Component;
 
 import ro.isdc.model.HtmlNodePathMapper;
@@ -72,8 +74,8 @@ public class MovieRetriever{
 				//convert the uri to HttpPost in order to set the post Data via setEntity()
 				HttpPost httpPost = (HttpPost) uri;
 				List<BasicNameValuePair> nameValuePairs = new ArrayList<BasicNameValuePair>(1);
+				
 				if(infoSourceModel.getUsesCookies().equals("true")){
-					
 					Map<String,String> postDataMap =  infoSourceModel.getPost().get("briefPostData").getPostDataMap();
 					Iterator<Entry<String, String>> it = postDataMap.entrySet().iterator();					
 					while(it.hasNext()){
@@ -91,21 +93,22 @@ public class MovieRetriever{
 						e.printStackTrace();
 					}
 					httpPost.setHeader("User-Agent", infoSourceModel.getPresetHeaders().get("User-Agent"));
-					HttpContext httpContext  = retrieveContext(infoSourceModel);					
-					executeRequest(atmosphereResource, httpPost, htmlNodePathMapper, detailedMovieData, httpContext, searchTerm);
+					HttpContext httpContext  = retrieveContext(infoSourceModel);
+					executeRequest(infoSourceModel, atmosphereResource, httpPost, htmlNodePathMapper, detailedMovieData, httpContext, searchTerm);
 				}
 			}else{// the search method is "get", so we don't need a HttpContext
-					executeRequest(atmosphereResource, uri, htmlNodePathMapper, detailedMovieData, null, searchTerm);
+					executeRequest(infoSourceModel, atmosphereResource, uri, htmlNodePathMapper, detailedMovieData, null, searchTerm);
 			}	
 						
 	};
 		
-	private void executeRequest(final AtmosphereResource atmosphereResource, final HttpUriRequest uri, final HtmlNodePathMapper htmlNodePathMapper, final boolean detailedMovieData, HttpContext httpContext, final String searchTerm) throws InterruptedException, IOReactorException{
+	private void executeRequest(final InfoSourceModel infoSourceModel, final AtmosphereResource atmosphereResource, final HttpUriRequest uri, final HtmlNodePathMapper htmlNodePathMapper, final boolean detailedMovieData, HttpContext httpContext, final String searchTerm) throws InterruptedException, IOReactorException{
 		final HttpAsyncClient httpClient = new DefaultHttpAsyncClient();
 		initParams(httpClient);		
 		httpClient.getParams().setParameter(ClientPNames.COOKIE_POLICY, CookiePolicy.BROWSER_COMPATIBILITY);
 		httpClient.start();
 		if(httpContext!=null){
+			
 			httpClient.execute(uri, httpContext, new FutureCallback<HttpResponse>(){
 				@Override
 				public void failed(Exception ex) {
@@ -114,6 +117,31 @@ public class MovieRetriever{
 
 				@Override
 				public void completed(HttpResponse result) {
+					
+					/* if there was only one result and the website redirected our request to the page of that particular result, 
+					 * we need to create another request for the detailed data from that page
+					 */
+					if(result.getStatusLine().getStatusCode()==302){
+						String redirectURL = result.getFirstHeader("Location").getValue();
+						System.out.println(redirectURL);
+						HttpUriRequest uri = new HttpGet(infoSourceModel.getSearchURLs().get("fetchCookieURL") + redirectURL);
+						try {
+							executeRequest(infoSourceModel, atmosphereResource, uri, htmlNodePathMapper, true, null, searchTerm);
+						} catch (IOReactorException e) {
+							e.printStackTrace();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
+						finally{
+							try {
+								httpClient.shutdown();
+							} catch (InterruptedException e) {
+								e.printStackTrace();
+							}
+						}
+						return;
+					}
+					
 					
 					if(detailedMovieData){
 						try {
@@ -148,7 +176,7 @@ public class MovieRetriever{
 								e.printStackTrace();
 							}
 						}
-					}else{
+					}else{// the request is for brief movie data
 						try {
 							String responseAsString = EntityUtils.toString(result.getEntity());							
 							SourceParserImpl parser = new SourceParserImpl();
@@ -157,17 +185,23 @@ public class MovieRetriever{
 
 							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper, searchTerm);
 							String moviesAsJson = "";
-							if(movies!=null){
+							if(movies.size()>0){
 								for (SimpleMovieInfo item : movies) {
 									System.out.println("Title");
 									System.out.println(item.getTitle());
-								}
+								}								
 
 								final ObjectMapper mapper = new ObjectMapper();
 								moviesAsJson = mapper.writeValueAsString(movies);
 								System.out.println(moviesAsJson);								
 							}else {
-									System.out.println("The parser didn't retrieve any brief movie information");									
+									System.out.println("The parser didn't retrieve any brief movie information via POST");			
+									JSONObject jsonObject = new JSONObject();
+									JSONArray jsonArray = new JSONArray();
+									jsonObject.put("site",uriRequested);
+									jsonArray.put(jsonObject);
+									moviesAsJson = jsonArray.toString();
+									System.out.println(moviesAsJson);
 							}
 							
 							if (atmosphereResource != null) {
@@ -235,7 +269,7 @@ public class MovieRetriever{
 								e.printStackTrace();
 							}
 						}
-					}else{
+					}else{//the request is for brief movie data
 						try {
 							String responseAsString = EntityUtils.toString(result.getEntity());
 							SourceParserImpl parser = new SourceParserImpl();
@@ -245,7 +279,7 @@ public class MovieRetriever{
 							ArrayList<SimpleMovieInfo> movies = (ArrayList<SimpleMovieInfo>) parser.getMoviesByTitle(responseAsString, uriRequested, htmlNodePathMapper, searchTerm);
 
 							String moviesAsJson = "";
-							if(movies!=null){
+							if(movies.size()>0){
 								for (SimpleMovieInfo item : movies) {
 									System.out.println("Title");
 									System.out.println(item.getTitle());
@@ -255,7 +289,13 @@ public class MovieRetriever{
 								moviesAsJson = mapper.writeValueAsString(movies);
 								System.out.println(moviesAsJson);								
 							}else {
-									System.out.println("The parser didn't retrieve any movie information");									
+								System.out.println("The parser didn't retrieve any brief movie information via GET");
+								JSONObject jsonObject = new JSONObject();
+								JSONArray jsonArray = new JSONArray();
+								jsonObject.put("site",uriRequested);
+								jsonArray.put(jsonObject);
+								moviesAsJson = jsonArray.toString();
+								System.out.println(moviesAsJson);
 							}
 
 							if (atmosphereResource != null) {

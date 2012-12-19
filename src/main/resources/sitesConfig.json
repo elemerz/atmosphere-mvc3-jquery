@@ -55,7 +55,7 @@
         "filmkatalogus": {
     	    "usesCookies": true,
             "searchURLs" :{
-        	    "fetchCookieURL": "http://www.filmkatalogus.hu/",
+        	    "fetchCookieURL": "http://www.filmkatalogus.hu",
         	    "briefSearchURL":"http://www.filmkatalogus.hu/kereses",
                 "fullSearchURL":"http://www.filmkatalogus.hu/{movieId}"
              },            
